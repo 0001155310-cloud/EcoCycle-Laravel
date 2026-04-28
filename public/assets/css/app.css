@@ -1,0 +1,476 @@
+:root {
+    --primary-color: #1e5d3b;
+    --secondary-color: #27ae60;
+    --accent-color: #2ecc71;
+    --text-main: #34495e;
+    --text-muted: #666;
+    --bg-body: #f0f7f4;
+    --white: #ffffff;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    --transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* --- RESET --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    color: var(--text-main);
+    background-color: var(--bg-body);
+}
+
+/* --- HEADER --- */
+header {
+    background: linear-gradient(135deg, #2c3e50 0%, var(--primary-color) 100%);
+    color: var(--white);
+    padding: 3.5rem 1rem;
+    text-align: center;
+    border-bottom: 4px solid var(--accent-color);
+}
+
+header h1 {
+    font-size: clamp(1.8rem, 5vw, 2.5rem);
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+}
+
+header p {
+    opacity: 0.9;
+    font-weight: 400;
+}
+
+/* --- NAVEGAÇÃO (Sem Dropdown) --- */
+nav {
+    background-color: var(--white);
+    padding: 1rem 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+nav ul {
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+nav li a {
+    text-decoration: none;
+    color: var(--text-main);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    position: relative;
+    padding: 5px 0;
+    transition: var(--transition);
+}
+
+nav li a:hover {
+    color: var(--secondary-color);
+}
+
+/* Linha animada sob os links */
+nav li a::after {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background-color: var(--accent-color);
+    transition: var(--transition);
+}
+
+nav li a:hover::after {
+    width: 100%;
+}
+
+/* --- CONTEÚDO PRINCIPAL --- */
+main {
+    max-width: 1200px;
+    margin: 3rem auto;
+    padding: 0 2rem;
+}
+
+section h2 {
+    color: var(--primary-color);
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+/* --- GRID DE PRODUTOS --- */
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    margin-top: 3rem;
+}
+
+/* --- CARD DE PRODUTO --- */
+.product-card {
+    background: var(--white);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: var(--transition);
+    border: 1px solid #edf2f7;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow);
+    border-color: var(--accent-color);
+}
+
+.product-image img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.product-card:hover .product-image img {
+    transform: scale(1.05);
+}
+
+.product-info {
+    padding: 2rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.product-info h4 {
+    font-size: 1.25rem;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.price {
+    display: block;
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: var(--secondary-color);
+    margin: 1rem 0;
+}
+
+/* --- BOTÕES --- */
+.btn-buy {
+    display: block;
+    width: 100%;
+    background-color: var(--secondary-color);
+    color: white;
+    text-decoration: none;
+    padding: 14px;
+    border-radius: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    transition: var(--transition);
+    margin-top: auto;
+}
+
+.btn-buy:hover {
+    background: var(--primary-color);
+    box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+}
+
+/* --- MODAL E BOTÃO ANIMADO --- */
+.button-cart-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 25px;
+}
+
+.button-animated {
+    width: 200px;
+    height: 50px;
+    background: var(--secondary-color);
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: var(--transition);
+}
+
+.text-btn, .icon-btn {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: top 0.45s ease;
+}
+
+.text-btn { top: 0; font-weight: 700; text-transform: uppercase; }
+.icon-btn { top: 100%; }
+.icon-btn svg { width: 24px; height: 24px; fill: white; }
+
+.button-animated:hover { background: var(--primary-color); }
+.button-animated:hover .text-btn { top: -100%; }
+.button-animated:hover .icon-btn { top: 0; }
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: var(--transition);
+    z-index: 2000;
+    backdrop-filter: blur(4px);
+}
+
+.modal-overlay:target { opacity: 1; visibility: visible; }
+
+.modal-content {
+    background: var(--white);
+    padding: 3rem;
+    border-radius: 24px;
+    max-width: 450px;
+    width: 90%;
+    position: relative;
+    transform: scale(0.85);
+    transition: var(--transition);
+}
+
+.modal-overlay:target .modal-content { transform: scale(1); }
+
+.modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 2rem;
+    text-decoration: none;
+    color: var(--text-muted);
+    line-height: 1;
+}
+
+/* --- PROJETOS E PARCERIAS --- */
+html {
+    scroll-behavior: smooth;
+}
+
+.intro-text {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.intro-text h2 {
+    color: var(--primary-color);
+    font-size: 2.2rem;
+    margin-bottom: 1rem;
+}
+
+.intro-text h2::after {
+    content: "";
+    display: block;
+    width: 50px;
+    height: 5px;
+    background: var(--accent-color);
+    margin: 10px auto 0;
+    border-radius: 10px;
+}
+
+.projects-container {
+    display: grid;
+    gap: 3.5rem;
+}
+
+.project-item {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: var(--white);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.06);
+    transition: var(--transition);
+}
+
+.project-item:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 45px rgba(0,0,0,0.1);
+}
+
+.project-img {
+    overflow: hidden;
+}
+
+.project-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.8s ease;
+}
+
+.project-item:hover .project-img img {
+    transform: scale(1.05);
+}
+
+.project-details {
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.tag {
+    background: #e8f5e9;
+    color: #2e7d32;
+    padding: 6px 16px;
+    border-radius: 50px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    align-self: flex-start;
+    margin-bottom: 1.2rem;
+    letter-spacing: 1px;
+}
+
+.project-details h3 {
+    font-size: 1.8rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+.project-details p {
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 1.7;
+    margin-bottom: 1rem;
+}
+
+.button-wrapper {
+    margin-top: 1.5rem;
+}
+
+.button-wrapper input {
+    display: none;
+}
+
+.bevel {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 0 35px;
+    height: 50px;
+    background: var(--accent-color) linear-gradient(to bottom, var(--accent-color) 50%, var(--primary-color) 50%);
+    box-shadow: 0px 10px 20px -8px rgba(0, 0, 0, 0.3), inset 0px -25px 0px 0px var(--primary-color);
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.bevel:before,
+.bevel:after {
+    content: "";
+    width: 25px;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    transition: all 0.2s ease;
+}
+
+.bevel:before {
+    left: 0;
+    background: linear-gradient(45deg, transparent 66.6%, var(--accent-color) 66.6%),
+                linear-gradient(-45deg, var(--primary-color) 33.3%, transparent 33.3%),
+                linear-gradient(to right, var(--accent-color), var(--primary-color));
+}
+
+.bevel:after {
+    right: 0;
+    background: linear-gradient(-45deg, transparent 66.6%, var(--accent-color) 66.6%),
+                linear-gradient(45deg, var(--primary-color) 33.3%, transparent 33.3%),
+                linear-gradient(to left, var(--accent-color), var(--primary-color));
+}
+
+.bevel:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+}
+
+.button-wrapper input:checked ~ .bevel {
+    padding: 0 20px;
+    background: transparent;
+    box-shadow: inset 0px 0px 0px 3px var(--accent-color);
+    color: var(--accent-color);
+    transform: scale(0.85);
+}
+
+.button-wrapper input:checked ~ .bevel:before {
+    transform: translateX(-100%);
+}
+
+.button-wrapper input:checked ~ .bevel:after {
+    transform: translateX(100%);
+}
+
+.btn-open {
+    display: inline-block;
+    background-color: var(--secondary-color);
+    color: white;
+    padding: 12px 25px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    transition: var(--transition);
+}
+
+.btn-open:hover {
+    background-color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+@media (max-width: 850px) {
+    .project-item {
+        grid-template-columns: 1fr;
+    }
+    .project-img {
+        height: 250px;
+    }
+    .project-details {
+        padding: 2rem;
+    }
+    nav ul { gap: 20px; }
+}
+
+/* --- FOOTER --- */
+footer {
+    background-color: #121212;
+    color: #888;
+    text-align: center;
+    padding: 4rem 1rem;
+    border-top: 4px solid var(--secondary-color);
+    margin-top: 4rem;
+}
+
+/* --- RESPONSIVIDADE --- */
+@media (max-width: 768px) {
+    nav ul { gap: 20px; }
+    header { padding: 2.5rem 1rem; }
+    .product-image img { height: 200px; }
+    .modal-content { padding: 2rem; }
+}
