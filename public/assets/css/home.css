@@ -29,7 +29,7 @@ body {
 
 /* --- HEADER --- */
 header {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    background: linear-gradient(135deg, #2c3e50 0%, var(--primary-color) 100%);
     color: var(--white);
     padding: 7rem 1rem;
     text-align: center;
@@ -178,12 +178,8 @@ nav li a:hover { color: var(--secondary-color); }
 }
 
 .dropbtn::after {
-    content: '>';
-    font-size: 1.0rem;
-    vertical-align: left;
-    transition: 0.3s;
-    display: inline-block;
-    margin-left: 5px;
+    content: none !important;
+    display: none !important;
 }
 
 .dropdown:hover .dropbtn::after { transform: rotate(90deg); color: var(--secondary-color); vertical-align: middle;}
