@@ -39,7 +39,7 @@
 </nav>
 
     <main>
-        <section id="home">
+        <section id="home" style="margin-top: 4rem;">
             <article>
                 <h2>Boas Vindas!</h2>
                 <p>Bem-vindo à EcoCycle, sua plataforma de sustentabilidade e reciclagem!</p>

@@ -54,7 +54,7 @@
 
                     <div class="form-group">
                         <label for="senha">Senha</label>
-                        <input id="senha" type="password" name="senha" placeholder="Sua senha secreta" required>
+                        <input id="senha" type="password" name="senha" placeholder="Digite sua senha aqui..." required>
                     </div>
 
                     <div class="form-helper">

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'EcoCycle - Sustentabilidade')</title>
-    <link rel="stylesheet" href="{{ asset('assets/css/app.css') }}">
+    <link rel="stylesheet" href="assets/css/app.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     @yield('styles')
 </head>
@@ -19,11 +19,11 @@
 
     <nav>
         <ul>
-            <li><a href="{{ route('home') }}">Home</a></li>
-            <li><a href="{{ route('produtos') }}">Produtos</a></li>
-            <li><a href="{{ route('projetos') }}">Projetos</a></li>
-            <li><a href="{{ route('parcerias') }}">Parcerias</a></li>
-            <li><a href="{{ route('login') }}">Login</a></li>
+            <li><a href="/">Home</a></li>
+            <li><a href="/produtos">Produtos</a></li>
+            <li><a href="/projetos">Projetos</a></li>
+            <li><a href="/parcerias">Parcerias</a></li>
+            <li><a href="/login">Login</a></li>
         </ul>
     </nav>
 
