@@ -45,7 +45,7 @@ class WebsiteController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
-            'senha' => 'required'
+            'password' => 'required'
         ]);
 
         if ($validator->fails()) {

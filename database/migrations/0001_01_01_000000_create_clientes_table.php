@@ -16,15 +16,17 @@ return new class extends Migration
 
             $table->string('password');
 
-            $table->string('tel');
+            $table->string('tel', 20);
 
             $table->string('endereco');
 
-            $table->string('estado', 2);
+            $table->char('estado', 2);
 
-            $table->string('cpf')->unique();
+            $table->string('cpf', 14)->unique();
 
             $table->timestamps();
+
+            $table->softDeletes();
         });
     }
 
