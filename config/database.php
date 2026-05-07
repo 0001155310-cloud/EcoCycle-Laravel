@@ -84,7 +84,7 @@ return [
             ]) : [],
         ],
 
-        'pgsql' => [
+           'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DB_URL', env('DATABASE_URL')),
             'host' => env('DB_HOST', '127.0.0.1'),
@@ -96,24 +96,28 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => 'public',
-            'sslmode' => env('DB_SSLMODE', 'require'),
+            'sslmode' => env('DB_SSLMODE', 'require'), // Mude 'prefer' para 'require'
 
-            'options' => [],
-        ],  
+            'options' => extension_loaded('pdo_pgsql') ? [
+                PDO::ATTR_EMULATE_PREPARES => true,
+                PDO::ATTR_STRINGIFY_FETCHES => true,
+                
+                PDO::PGSQL_ATTR_SSL_MODE => PDO::PGSQL_SSL_REQUIRE,
+            ] : [],
+        ],
 
-        'sqlsrv' => [
-            'driver' => 'sqlsrv',
-            'url' => env('DB_URL', env('DATABASE_URL')),
-            'host' => env('DB_HOST', 'localhost'),
-            'port' => env('DB_PORT', '1433'),
-            'database' => env('DB_DATABASE', 'laravel'),
-            'username' => env('DB_USERNAME', 'root'),
+        'render_pgsql_no_ssl' => [
+            'driver' => 'pgsql',
+            'host' => env('DB_HOST', 'dpg-d7u7f6pkh4rs738iaee0-a.oregon-postgres.render.com'),
+            'port' => env('DB_PORT', '5432'),
+            'database' => env('DB_DATABASE', 'ecocycle_spor'),
+            'username' => env('DB_USERNAME', 'ecocycle_spor_user'),
             'password' => env('DB_PASSWORD', ''),
-            'charset' => env('DB_CHARSET', 'utf8'),
+            'charset' => 'utf8',
             'prefix' => '',
             'prefix_indexes' => true,
-            // 'encrypt' => env('DB_ENCRYPT', 'yes'),
-            // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
+            'search_path' => 'public',
+            'sslmode' => 'disable',
         ],
 
     ],
