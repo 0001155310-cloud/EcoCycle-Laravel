@@ -18,8 +18,8 @@
                         <img src="https://www.tribunapr.com.br/wp-content/uploads/2023/12/11112227/composteira.jpg" alt="Composteira Doméstica">
                     </div>
                     <div class="product-info">
-                        <h4>Composteira Doméstica</h4>
-                        <p>Solução prática para transformar resíduos orgânicos em adubo em sua cozinha.</p>
+                        <h4>Composteira Inteligente</h4>
+                        <p>Solução prática para transformar resíduos orgânicos em adubo, biogás e biofertilizante.</p>
                         <span class="price">R$ 189,90</span>
                         <a href="#prod-1" class="btn-buy">Saber Mais</a>
                     </div>
@@ -27,10 +27,10 @@
 
                 <div class="product-card">
                     <div class="product-image">
-                        <img src="https://www.assai.com.br/sites/default/files/sustentabilidade-assai-compostagem-como-transformar-residuos-em-adubo-banner-01.jpg" alt="Bio-Acelerador">
+                        <img src="https://www.assai.com.br/sites/default/files/sustentabilidade-assai-compostagem-como-transformar-residuos-em-adubo-banner-01.jpg" alt="Bio-Fertilizante">
                     </div>
                     <div class="product-info">
-                        <h4>Bio-Acelerador</h4>
+                        <h4>Bio-Fertilizante</h4>
                         <p>Mix biológico que reduz o tempo de decomposição e elimina odores.</p>
                         <span class="price">R$ 45,00</span>
                         <a href="#prod-2" class="btn-buy">Saber Mais</a>
@@ -55,13 +55,13 @@
         <div id="prod-1" class="modal-overlay">
             <div class="modal-content">
                 <a href="#" class="modal-close">&times;</a>
-                <h4>Composteira Doméstica</h4>
+                <h4>Composteira Inteligente</h4>
                 <hr>
                 <p>Processamento higiênico e sem cheiro para restos de alimentos.</p>
                 <ul>
                     <li>Capacidade: 15 Litros</li>
                     <li>Acompanha serragem e manual</li>
-                    <li>Plástico reciclado BPA Free</li>
+                    <li>Acrílico resistente</li>
                 </ul>
                 
                 <div class="button-cart-wrapper">
@@ -80,9 +80,9 @@
         <div id="prod-2" class="modal-overlay">
             <div class="modal-content">
                 <a href="#" class="modal-close">&times;</a>
-                <h4>Bio-Acelerador</h4>
+                <h4>Bio-Fertilizante</h4>
                 <hr>
-                <p>Microrganismos que aceleram a fermentação natural.</p>
+                <p>Mix biológico que reduz o tempo de decomposição e elimina odores.</p>
                 <ul>
                     <li>Até 20 ciclos de uso</li>
                     <li>100% Livre de químicos</li>
