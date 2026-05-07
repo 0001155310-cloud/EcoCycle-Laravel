@@ -46,32 +46,32 @@
 
                     <div class="form-group">
                         <label for="email">E-mail</label>
-                        <input type="email" id="email" name="email" value="{{ old('email') }}" required>
+                        <input type="email" id="email" name="email" placeholder="exemplo@dominio.com" value="{{ old('email') }}" required>
                     </div>
 
                     <div class="form-group">
                         <label for="senha">Senha</label>
-                        <input type="password" id="senha" name="senha" required>
+                        <input type="password" id="senha" name="senha" placeholder="Digite sua senha" required>
                     </div>
 
                     <div class="form-group">
                         <label for="tel">Telefone</label>
-                        <input type="text" id="tel" name="tel" value="{{ old('tel') }}" required>
+                        <input type="text" id="tel" name="tel" maxlength="15" placeholder="(00) 0000-0000" required>
                     </div>
 
                     <div class="form-group">
                         <label for="endereco">Endereço</label>
-                        <input type="text" id="endereco" name="endereco" value="{{ old('endereco') }}" required>
+                        <input type="text" id="endereco" name="endereco" placeholder="Digite seu endereço" value="{{ old('endereco') }}" required>
                     </div>
 
                     <div class="form-group">
                         <label for="estado">Estado (UF)</label>
-                        <input type="text" id="estado" name="estado" value="{{ old('estado') }}" maxlength="2" required>
+                        <input type="text" id="estado" name="estado" placeholder="Ex: SP" value="{{ old('estado') }}" maxlength="2" required>
                     </div>
 
                     <div class="form-group">
                         <label for="cpf">CPF</label>
-                        <input type="text" id="cpf" name="cpf" value="{{ old('cpf') }}" required>
+                        <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00" value="{{ old('cpf') }}" required>
                     </div>
 
                     <div class="btn-group">

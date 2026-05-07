@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -6,18 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 class Clientes extends Model
 {
     protected $fillable = [
-        'nome',
         'email',
-        'tel',
         'password',
-        'nascimento',
+        'tel',
+        'endereco',
         'estado',
-        'genero',
-        'interesses',
-        'apresentacao',
-    ];
-
-    protected $casts = [
-        'interesses' => 'string',
+        'cpf',
     ];
 }

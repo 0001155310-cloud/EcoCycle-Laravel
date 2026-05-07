@@ -5,9 +5,10 @@ RUN apt-get update && apt-get install -y \
     git \
     unzip \
     curl \
+    libpq-dev \
     libzip-dev \
     zip \
-    && docker-php-ext-install pdo pdo_mysql zip
+    && docker-php-ext-install pdo pdo_pgsql pgsql zip
 
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -41,4 +42,4 @@ RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available
 EXPOSE 80
 
 # Inicialização do container
-CMD php artisan migrate --force && apache2-foreground
+CMD php artisan migrate:fresh --force && apache2-foreground
