@@ -99,9 +99,7 @@ return [
             'search_path' => 'public',
             'sslmode' => 'require',
 
-            'options' => extension_loaded('pdo_pgsql') ? array_filter([
-                PDO::PGSQL_ATTR_SSL_MODE => 'require',
-            ]) : [],
+            'options' => [],
         ],  
 
         'sqlsrv' => [
