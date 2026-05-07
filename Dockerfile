@@ -19,30 +19,19 @@ COPY . /var/www/html
 # Diretório de trabalho
 WORKDIR /var/www/html
 
-# Instalar dependências do Laravel (sem pacotes de desenvolvimento para ser mais rápido)
-RUN composer install --no-dev --optimize-autoloader
+# --- ALTERAÇÃO AQUI: Adicionado --no-scripts ---
+RUN composer install --no-dev --optimize-autoloader --no-scripts
 
-# Limpar caches para garantir que as novas variáveis de ambiente sejam lidas
-RUN php artisan config:clear || true
-RUN php artisan cache:clear || true
-RUN php artisan route:clear || true
-RUN php artisan view:clear || true
+# Permissões para as pastas de escrita
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Dar permissão para as pastas de escrita do Laravel
-RUN chown -R www-data:www-data /var/www/html/storage
-RUN chown -R www-data:www-data /var/www/html/bootstrap/cache
-
-# Habilitar mod_rewrite do Apache (necessário para as rotas do Laravel)
+# Habilitar mod_rewrite do Apache
 RUN a2enmod rewrite
 
-# Apontar a raiz do servidor Apache para a pasta /public do Laravel
+# Apontar Apache para /public
 RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
 
-# Expor a porta 80 para o Render
 EXPOSE 80
 
-# COMANDO FINAL: 
-# 1. Roda as migrações (cria as tabelas) usando o banco configurado
-# 2. Se as migrações derem certo, inicia o servidor Apache
-# Instalar dependências sem rodar scripts que dependem do banco de dados
-RUN composer install --no-dev --optimize-autoloader --no-scripts
+# No comando final, o container já terá as variáveis de ambiente, então os scripts funcionam
+CMD php artisan package:discover --ansi && php artisan migrate --force && apache2-foreground
