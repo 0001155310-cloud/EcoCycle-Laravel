@@ -42,4 +42,4 @@ RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available
 EXPOSE 80
 
 # Inicialização do container
-CMD php artisan migrate:fresh --force && apache2-foreground
+CMD apache2-foreground
