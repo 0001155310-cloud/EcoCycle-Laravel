@@ -45,7 +45,7 @@ class WebsiteController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
-            'password' => 'required'
+            'senha' => 'required'
         ]);
 
         if ($validator->fails()) {
@@ -57,7 +57,7 @@ class WebsiteController extends Controller
         if (Auth::attempt(['email' => $request->email, 'password' => $request->senha])) {
             $request->session()->regenerate();
 
-            return redirect()->route('home');
+            return redirect()->route('cliente.home');
         }
 
         return redirect()->back()
@@ -110,7 +110,9 @@ class WebsiteController extends Controller
 
         $cl->save();
 
-        return redirect()->route('cadastro')->with('success', 'Cliente cadastrado com sucesso!');
+        Auth::login($cl);
+
+        return redirect()->route('cliente.home');
     }
 
     public function salvarCliente(Request $request)
