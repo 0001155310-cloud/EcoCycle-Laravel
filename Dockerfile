@@ -44,4 +44,5 @@ EXPOSE 80
 # COMANDO FINAL: 
 # 1. Roda as migrações (cria as tabelas) usando o banco configurado
 # 2. Se as migrações derem certo, inicia o servidor Apache
-CMD php artisan migrate --force && apache2-foreground
+# Instalar dependências sem rodar scripts que dependem do banco de dados
+RUN composer install --no-dev --optimize-autoloader --no-scripts
