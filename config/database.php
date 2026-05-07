@@ -85,26 +85,21 @@ return [
         ],
 
            'pgsql' => [
-            'driver' => 'pgsql',
-            'url' => env('DB_URL', env('DATABASE_URL')),
-            'host' => env('DB_HOST', '127.0.0.1'),
-            'port' => env('DB_PORT', '5432'),
-            'database' => env('DB_DATABASE', 'laravel'),
-            'username' => env('DB_USERNAME', 'root'),
-            'password' => env('DB_PASSWORD', ''),
-            'charset' => env('DB_CHARSET', 'utf8'),
-            'prefix' => '',
-            'prefix_indexes' => true,
-            'search_path' => 'public',
-            'sslmode' => env('DB_SSLMODE', 'require'), // Mude 'prefer' para 'require'
-
-            'options' => [
-                PDO::ATTR_EMULATE_PREPARES => true,
-                PDO::ATTR_STRINGIFY_FETCHES => true,
-                // Usamos o número 1012 que equivale a PGSQL_ATTR_SSL_MODE
-                1012 => 1, 
-            ],
-        ],
+    'driver' => 'pgsql',
+    'url' => env('DB_URL', env('DATABASE_URL')),
+    'host' => env('DB_HOST', '127.0.0.1'),
+    'port' => env('DB_PORT', '5432'),
+    'database' => env('DB_DATABASE', 'laravel'),
+    'username' => env('DB_USERNAME', 'root'),
+    'password' => env('DB_PASSWORD', ''),
+    'charset' => env('DB_CHARSET', 'utf8'),
+    'prefix' => '',
+    'prefix_indexes' => true,
+    'search_path' => 'public',
+    'sslmode' => 'verify-full', // O Render prefere verify-full ou require
+    'sslrootcert' => '/etc/ssl/certs/ca-certificates.crt', // Caminho padrão no Debian/Ubuntu do Docker
+],
+        
 
         'render_pgsql_no_ssl' => [
             'driver' => 'pgsql',
