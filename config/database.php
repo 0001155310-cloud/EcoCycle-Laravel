@@ -98,12 +98,12 @@ return [
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'require'), // Mude 'prefer' para 'require'
 
-            'options' => extension_loaded('pdo_pgsql') ? [
+            'options' => [
                 PDO::ATTR_EMULATE_PREPARES => true,
                 PDO::ATTR_STRINGIFY_FETCHES => true,
-                
-                PDO::PGSQL_ATTR_SSL_MODE => PDO::PGSQL_SSL_REQUIRE,
-            ] : [],
+                // Usamos o número 1012 que equivale a PGSQL_ATTR_SSL_MODE
+                1012 => 1, 
+            ],
         ],
 
         'render_pgsql_no_ssl' => [
