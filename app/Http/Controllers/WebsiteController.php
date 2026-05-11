@@ -126,5 +126,9 @@ class WebsiteController extends Controller
     }
 
     public function homeAdmin() {
+
+    if(!Auth::check()){
+        return redirect("/login");
+    }
     return view('Admin.home_admin');}
 }
