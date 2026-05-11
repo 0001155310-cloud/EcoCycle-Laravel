@@ -84,7 +84,7 @@ return [
             ]) : [],
         ],
 
-           'pgsql' => [
+    'pgsql' => [
     'driver' => 'pgsql',
     'url' => env('DB_URL', env('DATABASE_URL')),
     'host' => env('DB_HOST', '127.0.0.1'),
@@ -96,7 +96,7 @@ return [
     'prefix' => '',
     'prefix_indexes' => true,
     'search_path' => 'public',
-    'sslmode' => 'verify-full', // O Render prefere verify-full ou require
+    'sslmode' => env('DB_SSLMODE', 'require'),
     'sslrootcert' => '/etc/ssl/certs/ca-certificates.crt', // Caminho padrão no Debian/Ubuntu do Docker
 ],
         
