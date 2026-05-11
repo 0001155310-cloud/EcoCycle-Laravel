@@ -96,7 +96,7 @@ return [
     'prefix' => '',
     'prefix_indexes' => true,
     'search_path' => 'public',
-    'sslmode' => env('DB_SSLMODE', 'require'),
+    'sslmode' => env('  ', 'require'),
     'sslrootcert' => '/etc/ssl/certs/ca-certificates.crt', // Caminho padrão no Debian/Ubuntu do Docker
 ],
         
