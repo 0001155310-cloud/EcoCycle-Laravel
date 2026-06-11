@@ -4,52 +4,69 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Painel do Cliente - EcoCycle')</title>
-    {{-- Importante: Use asset() para garantir que o CSS carregue em qualquer rota --}}
-    <link rel="stylesheet" href="assets/css/app.css">
+    <link rel="stylesheet" href="{{ asset('/assets/css/app.css') }}">
+    <link rel="stylesheet" href="{{ asset('/assets/css/charts.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
- 
     @yield('styles')
-
 </head>
-<body>
+<body class="shell">
+    @php
+        $user = Auth::user();
+        $displayName = $user?->nome ?? $user?->name ?? 'Usuário';
+    @endphp
 
-    <header>
-        <div class="header-content">
-            <h1>Olá, Cliente!</span></h1>
-            <p>Bem-vindo à sua área exclusiva de sustentabilidade</p>
-        </div>
+    <header class="topbar">
+        <button class="topbar-hamburger" id="menuToggle" type="button" aria-label="Abrir menu">
+            <span></span><span></span><span></span>
+        </button>
+        <div class="topbar-brand">EcoCycle <em>Cliente</em></div>
+        <div class="topbar-user">{{ $displayName }}</div>
     </header>
 
-    @if(Auth::check())
-    <div class="user-info">
-        Conectado como: <strong>{{ Auth::user()->email }}</strong>
-    </div>
-    @endif
+    <div class="overlay" id="sidebarOverlay"></div>
 
-    <nav>
-        <ul>
-            {{-- As 3 Opções principais --}}
-            <li><a href="{{ route('cliente.home') }}">Início</a></li>
-            <li><a href="{{ route('cliente.home') }}#graficos">Monitoramento</a></li>
-            <li><a href="{{ route('produtos') }}">Nova Compra</a></li>
-            
-            {{-- Opção de Logout via Formulário (Segurança do Laravel) --}}
-            <li>
-                <form action="{{ route('logout') }}" method="POST" style="display: inline;">
-                    @csrf
-                    <button type="submit" class="btn-logout">Sair</button>
-                </form>
-            </li>
-        </ul>
-    </nav>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-head">
+            <div class="sidebar-logo">EcoCycle <span>Client</span><br><small>Painel inteligente</small></div>
+            <button class="sidebar-x" id="closeMenu" type="button" aria-label="Fechar menu">✕</button>
+        </div>
+        <div class="sidebar-profile">
+            <div class="avatar">{{ substr($displayName, 0, 1) }}</div>
+            <div>
+                <div class="profile-name">{{ $displayName }}</div>
+                <div class="profile-role">{{ $user->email ?? 'Cliente EcoCycle' }}</div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-group">Navegação</div>
+            <a class="nav-link active" href="{{ route('cliente.home') }}"> Dashboard</a>
+            <a class="nav-link" href="{{ route('cliente.home') }}#graficos"> Monitoramento</a>
+            <a class="nav-link" href="{{ route('cliente.configuracao') }}"> Configuração</a>
+            <a class="nav-link" href="{{ route('cliente.dispositivos') }}"> Dados dos dispositivos</a>
+            <a class="nav-link" href="{{ route('cliente.historico') }}"> Históricos</a>
+            <a class="nav-link" href="{{ route('cliente.faq') }}"> FAQ &amp; ajuda</a>
+            <form action="{{ route('logout') }}" method="POST" class="nav-link logout" style="padding:0;">
+                @csrf
+                <button type="submit" class="nav-link logout" style="width:100%; border:none; text-align:left;">↩ Sair</button>
+            </form>
+        </nav>
+    </aside>
 
+    <main class="main">
+        @if(session('success'))
+            <div class="flash flash-ok">{{ session('success') }}</div>
+        @endif
+        @if($errors->any())
+            <div class="flash flash-err">{{ $errors->first() }}</div>
+        @endif
+        <section class="main-body">
+            @yield('content')
+        </section>
+        
 
-        @yield('content')
+        <script src="{{ asset('/assets/js/script.js') }}"></script>
+        @yield('scripts')
+    </main>
 
-    <footer>
-        <p>&copy; {{ date('Y') }} EcoCycle. Todos os direitos reservados.</p>
-    </footer>
-
-    @yield('scripts')
 </body>
 </html>

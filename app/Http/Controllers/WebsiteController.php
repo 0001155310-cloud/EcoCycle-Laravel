@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Clientes;
+use App\Models\LeituraArduino;
+use App\Models\TipoAcesso;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -122,13 +124,195 @@ class WebsiteController extends Controller
 
     public function homeCliente()
     {
-        return view('Cliente.home_cliente');
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
+
+        $latest = LeituraArduino::latest()->first();
+
+        return view('Cliente.home_cliente', compact('latest'));
     }
 
-    public function homeAdmin() {
+    public function configuracaoCliente()
+    {
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
 
-    if(!Auth::check()){
-        return redirect("/login");
+        $cliente = Auth::user();
+
+        return view('Cliente.configuracao', compact('cliente'));
     }
-    return view('Admin.home_admin');}
+
+    public function atualizarConfiguracao(Request $request)
+    {
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
+
+        $cliente = Auth::user();
+
+        $validator = Validator::make($request->all(), [
+            'nome' => 'required|string|max:255',
+            'email' => 'required|email|unique:clientes,email,' . $cliente->id,
+            'tel' => 'nullable|string|max:30',
+            'endereco' => 'nullable|string|max:255',
+            'estado' => 'nullable|string|max:2',
+            'cpf' => 'nullable|string|max:20',
+            'password' => 'nullable|min:6|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $cliente->nome = $request->input('nome');
+        $cliente->email = $request->input('email');
+        $cliente->tel = $request->input('tel', $cliente->tel);
+        $cliente->endereco = $request->input('endereco', $cliente->endereco);
+        $cliente->estado = $request->input('estado', $cliente->estado);
+        $cliente->cpf = $request->input('cpf', $cliente->cpf);
+
+        if ($request->filled('password')) {
+            $cliente->password = Hash::make($request->input('password'));
+        }
+
+        $cliente->save();
+
+        return redirect()->back()->with('success', 'Configuração atualizada com sucesso.');
+    }
+
+    public function homeAdmin()
+    {
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
+
+        $latest = LeituraArduino::latest()->first();
+
+        return view('Admin.home_admin', compact('latest'));
+    }
+
+    public function historicoCliente()
+    {
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
+
+        return view('Cliente.historico');
+    }
+
+    public function faqCliente()
+    {
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
+
+        return view('Cliente.faq');
+    }
+
+    public function compraCliente()
+    {
+        return $this->dispositivosCliente();
+    }
+
+    public function dispositivosCliente()
+    {
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
+
+        $devices = LeituraArduino::select('dispositivo_id')
+            ->distinct()
+            ->pluck('dispositivo_id')
+            ->filter()
+            ->values();
+
+        if ($devices->isEmpty()) {
+            $devices = collect(['estacao-01', 'estacao-02', 'estacao-03']);
+        }
+
+        $deviceData = $devices->mapWithKeys(function ($device) {
+            return [$device => LeituraArduino::where('dispositivo_id', $device)->latest()->first()];
+        });
+
+        return view('Cliente.dispositivos', compact('devices', 'deviceData'));
+    }
+
+    public function adminClientes(Request $request)
+    {
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
+
+        $latest = LeituraArduino::latest()->first();
+        $query = $request->input('q');
+        $tipo = $request->input('tipo');
+
+        $clientes = Clientes::with('tipoAcesso')
+            ->when($query, function ($builder) use ($query) {
+                $builder->where(function ($sub) use ($query) {
+                    $sub->where('nome', 'like', "%{$query}%")
+                        ->orWhere('email', 'like', "%{$query}%");
+                });
+            })
+            ->when($tipo, fn ($builder) => $builder->where('tipo_acesso_id', $tipo))
+            ->latest('id')
+            ->get();
+
+        $tipos = TipoAcesso::orderBy('nome')->get();
+
+        return view('Admin.clientes', compact('clientes', 'tipos', 'query', 'tipo', 'latest'));
+    }
+
+    public function adminVendas()
+    {
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
+
+        $latest = LeituraArduino::latest()->first();
+        $clientes = Clientes::count();
+        $leituras = LeituraArduino::count();
+
+        return view('Admin.vendas', compact('latest', 'clientes', 'leituras'));
+    }
+
+    public function adminHistoricos()
+    {
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
+
+        $latest = LeituraArduino::latest()->first();
+        $historicos = LeituraArduino::latest()->take(8)->get();
+
+        return view('Admin.historicos', compact('latest', 'historicos'));
+    }
+
+    public function adminRotas()
+    {
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
+
+        $latest = LeituraArduino::latest()->first();
+
+        return view('Admin.rotas', compact('latest'));
+    }
+
+    public function arduinoLatest(Request $request)
+    {
+        $device = $request->input('device');
+
+        $latest = $device
+            ? LeituraArduino::where('dispositivo_id', $device)->latest()->first()
+            : LeituraArduino::latest()->first();
+
+        return response()->json([
+            'ok' => true,
+            'data' => $latest,
+            'updated_at' => $latest?->updated_at?->toDateTimeString(),
+        ]);
+    }
 }

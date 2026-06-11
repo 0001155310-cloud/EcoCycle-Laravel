@@ -1,8 +1,8 @@
-    @extends('Admin.layout_admin')
-    @section('title', 'Monitoramento Real-Time - EcoCycle')
+@extends('Admin.layout_admin')
+@section('title', 'Monitoramento Real-Time - EcoCycle')
 
-    @section('styles')
-    <style>
+@section('styles')
+<style>
         /* Grid de Métricas Rápidas */
         .metrics-grid {
             display: grid;
@@ -116,12 +116,15 @@
     </style>
     @endsection
 
-    @section('content')
-    <section id="dashboard">
-        <div class="intro-text">
+@section('content')
+<section id="dashboard" class="dashboard-hero">
+    <div class="dash-top">
+        <div>
             <h2>Painel de Controle Arduino</h2>
-            <p>Acompanhe a saúde da sua compostagem e a economia gerada em tempo real.</p>
+            <p>Acompanhe a saúde da sua compostagem e os indicadores do processo em tempo real.</p>
         </div>
+        <span class="live-pill"><span class="live-dot"></span>Conexão com a base dos arduinos</span>
+    </div>
 
         <div class="metrics-panel">
             <div class="metrics-grid">
@@ -129,15 +132,13 @@
                     <div class="card-body">
                     <div class="d-flex justify-content-between">
                         <div>
-                            <p class="fw-medium text-muted mb-0">Vendas</p>
+                            <p class="fw-medium text-muted mb-0">Umidade</p>
                             <h2 class="mt-4 ff-secondary fw-semibold">
-                                <span class="counter-value" data-target="1200">1.2</span>k
+                                <span class="counter-value" id="admin-umidade">--</span>%
                             </h2>
                             <p class="mb-0 text-muted">
-                                <span class="badge bg-light text-success mb-0">
-                                    <i class="ri-arrow-up-line align-middle"></i> 8.3 %
-                                </span>
-                                vs. mês anterior
+                                <span class="badge bg-light text-success mb-0">Tempo real</span>
+                                desde o sensor Arduino
                             </p>
                         </div>
                         <div>
@@ -160,15 +161,13 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
                         <div>
-                            <p class="fw-medium text-muted mb-0">Processo</p>
+                            <p class="fw-medium text-muted mb-0">Temperatura</p>
                             <h2 class="mt-4 ff-secondary fw-semibold">
-                                <span class="counter-value" data-target="14">14</span>
+                                <span class="counter-value" id="admin-temperatura">--</span>°C
                             </h2>
                             <p class="mb-0 text-muted">
-                                <span class="badge bg-light text-danger mb-0">
-                                    <i class="ri-arrow-down-line align-middle"></i> 7.1 %
-                                </span>
-                                em relação ao mês anterior
+                                <span class="badge bg-light text-warning mb-0">Monitorado</span>
+                                pelo sistema de leitura
                             </p>
                         </div>
                         <div>
@@ -189,15 +188,11 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
                         <div>
-                            <p class="fw-medium text-muted mb-0">Financeiro</p>
-                            <h2 class="mt-4 ff-secondary fw-semibold">
-                                <span class="counter-value" data-target="340">340</span>k
-                            </h2>
+                            <p class="fw-medium text-muted mb-0">Status</p>
+                            <h2 class="mt-4 ff-secondary fw-semibold" id="admin-status">--</h2>
                             <p class="mb-0 text-muted">
-                                <span class="badge bg-light text-success mb-0">
-                                    <i class="ri-arrow-up-line align-middle"></i> 22.4 %
-                                </span>
-                                vs. previous month
+                                <span class="badge bg-light text-success mb-0">Atualizado</span>
+                                conforme a leitura mais recente
                             </p>
                         </div>
                         <div>
@@ -220,57 +215,120 @@
         <div class="projects-container">
             <div class="project-item">
                 <div class="chart-container">
-                    <span class="tag">Histórico Semanal</span>
-                    <h3>Níveis de Umidade</h3>
+                    <span class="tag">Leitura Arduino</span>
+                    <h3>Umidade e temperatura</h3>
                     <canvas id="humidityChart"></canvas>
                 </div>
             </div>
 
             <div class="project-item">
                 <div class="chart-container">
-                    <span class="tag">Projeção</span>
-                    <h3>Valor de Mercado do Adubo Produzido</h3>
+                    <span class="tag">Indicadores</span>
+                    <h3>pH, gás e peso do material</h3>
                     <canvas id="profitChart"></canvas>
+                </div>
+            </div>
+            <div class="project-item">
+                <div class="chart-container">
+                    <span class="tag">Resumo</span>
+                    <h3>Qualidade do sistema</h3>
+                    <canvas id="qualityChart"></canvas>
+                </div>
+            </div>
+            <div class="project-item">
+                <div class="chart-container">
+                    <span class="tag">Risco</span>
+                    <h3>Eficiência e estabilidade do processo</h3>
+                    <canvas id="radarChart"></canvas>
                 </div>
             </div>
         </div>
     </section>
     @endsection
 
-    @section('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        // Gráfico de Umidade (Linha)
-        const ctxHum = document.getElementById('humidityChart').getContext('2d');
-        new Chart(ctxHum, {
-            type: 'line',
-            data: {
-                labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'],
-                datasets: [{
-                    label: 'Umidade %',
-                    data: [60, 58, 65, 70, 68, 62, 65],
-                    borderColor: '#27ae60',
-                    tension: 0.3,
-                    fill: true,
-                    backgroundColor: 'rgba(39, 174, 96, 0.1)'
-                }]
-            },
-            options: { responsive: true }
-        });
+@section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const initial = @json($latest ?? null);
+    const ctxHum = document.getElementById('humidityChart').getContext('2d');
+    const humidityChart = new Chart(ctxHum, {
+        type: 'line',
+        data: {
+            labels: ['Umidade', 'Temperatura'],
+            datasets: [{
+                label: 'Leituras',
+                data: [initial?.umidade ?? 65, initial?.temperatura ?? 24],
+                borderColor: '#27ae60',
+                backgroundColor: 'rgba(39, 174, 96, 0.12)',
+                tension: 0.35,
+                fill: true
+            }]
+        },
+        options: { responsive: true, animation: { duration: 800 } }
+    });
 
-        // Gráfico de Lucro (Barra)
-        const ctxProfit = document.getElementById('profitChart').getContext('2d');
-        new Chart(ctxProfit, {
-            type: 'bar',
-            data: {
-                labels: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'],
-                datasets: [{
-                    label: 'Lucro Estimado (R$)',
-                    data: [80, 150, 240, 342],
-                    backgroundColor: '#1e5d3b'
-                }]
-            },
-            options: { responsive: true }
-        });
-    </script>
-    @endsection
+    const ctxProfit = document.getElementById('profitChart').getContext('2d');
+    const profitChart = new Chart(ctxProfit, {
+        type: 'bar',
+        data: {
+            labels: ['pH', 'Gás', 'Peso'],
+            datasets: [{
+                label: 'Indicadores',
+                data: [initial?.ph ?? 6.8, initial?.gas ?? 120, initial?.peso ?? 18],
+                backgroundColor: ['#1e5d3b', '#2ecc71', '#f1c40f']
+            }]
+        },
+        options: { responsive: true, animation: { duration: 800 } }
+    });
+
+    const qualityChart = new Chart(document.getElementById('qualityChart').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Ideal', 'Atenção', 'Risco'],
+            datasets: [{
+                data: [68, 22, 10],
+                backgroundColor: ['#27ae60', '#1e5d3b', '#f1c40f'],
+                borderWidth: 0
+            }]
+        },
+        options: { responsive: true, cutout: '65%' }
+    });
+
+    const radarChart = new Chart(document.getElementById('radarChart').getContext('2d'), {
+        type: 'radar',
+        data: {
+            labels: ['Umidade', 'Temperatura', 'Estabilidade', 'Eficiência', 'Qualidade'],
+            datasets: [{
+                label: 'Performance',
+                data: [82, 74, 90, 76, 85],
+                backgroundColor: 'rgba(39, 174, 96, 0.16)',
+                borderColor: '#1e5d3b',
+                pointBackgroundColor: '#27ae60'
+            }]
+        },
+        options: { responsive: true, scales: { r: { suggestedMin: 0, suggestedMax: 100 } } }
+    });
+
+    function updateAdminCards(data) {
+        document.getElementById('admin-umidade').textContent = Number(data?.umidade ?? 0).toFixed(0);
+        document.getElementById('admin-temperatura').textContent = Number(data?.temperatura ?? 0).toFixed(1);
+        document.getElementById('admin-status').textContent = String(data?.status_contaminacao || 'nao_analisado').replace(/_/g, ' ');
+        humidityChart.data.datasets[0].data = [Number(data?.umidade ?? 0), Number(data?.temperatura ?? 0)];
+        humidityChart.update();
+        profitChart.data.datasets[0].data = [Number(data?.ph ?? 0), Number(data?.gas ?? 0), Number(data?.peso ?? 0)];
+        profitChart.update();
+        qualityChart.data.datasets[0].data = [Math.max(10, 100 - (Number(data?.umidade ?? 0) / 2)), Math.max(5, (Number(data?.umidade ?? 0) / 3)), Math.max(2, 10 + ((Number(data?.gas ?? 0) / 60)))];
+        qualityChart.update();
+    }
+
+    function refreshAdminData() {
+        fetch('{{ route('arduino.latest') }}')
+            .then(r => r.json())
+            .then(result => { if (result?.data) updateAdminCards(result.data); })
+            .catch(() => {});
+    }
+
+    updateAdminCards(initial || {});
+    setInterval(refreshAdminData, 5000);
+</script>
+@endsection

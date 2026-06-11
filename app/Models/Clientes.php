@@ -19,9 +19,15 @@ class Clientes extends Authenticatable
         'endereco',
         'estado',
         'cpf',
+        'tipo_acesso_id',
     ];
 
     protected $hidden = [
         'password',
     ];
+
+    public function tipoAcesso()
+    {
+        return $this->belongsTo(TipoAcesso::class, 'tipo_acesso_id');
+    }
 }

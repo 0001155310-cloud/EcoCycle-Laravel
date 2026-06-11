@@ -55,7 +55,7 @@
             <div class="cards-container">
                 <a href="/produtos" class="card-link">
                     <div class="card">
-                        <img src="{{ asset('assets/img/composteira.jpg') }}" alt="Produtos">
+                        <img src="{{ asset('/assets/img/composteira.jpg') }}" alt="Produtos">
                         <div class="overlay">
                             <h4>Produtos</h4>
                             <p>Conheça nossos produtos sustentáveis</p>
@@ -65,7 +65,7 @@
 
                 <a href="/projetos" class="card-link">
                     <div class="card">
-                        <img src="{{ asset('assets/img/adubo.jpg') }}" alt="Projetos">
+                        <img src="{{ asset('/assets/img/adubo.jpg') }}" alt="Projetos">
                         <div class="overlay">
                             <h4>Projetos</h4>
                             <p>Veja nossos projetos inovadores</p>
@@ -75,7 +75,7 @@
 
                 <a href="/parcerias" class="card-link">
                     <div class="card">
-                        <img src="{{ asset('assets/img/parcerias.jpg') }}" alt="Parcerias">
+                        <img src="{{ asset('/assets/img/parcerias.jpg') }}" alt="Parcerias">
                         <div class="overlay">
                             <h4>Parcerias</h4>
                             <p>Conheça nossos parceiros</p>
@@ -96,9 +96,8 @@
 
                 <h3>Nossa Missão</h3>
                 <p>
-                    Nossa missão é desenvolver soluções tecnológicas acessíveis capazes de converter restos
-                    de alimentos, resíduos agrícolas e subprodutos animais em recursos valiosos como
-                    adubo orgânico, biofertilizante líquido e biogás.
+                    Nossa missão é desenvolver soluções tecnológicas acessíveis capazes de coletar dados a partir de restos
+                    de alimentos, resíduos agrícolas e subprodutos animais em recursos valiosos.
                 </p>
 
                 <h3>O Projeto</h3>
