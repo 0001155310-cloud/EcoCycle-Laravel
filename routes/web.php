@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WebsiteController;
 use App\Http\AdminController;
+use App\Http\Controllers\Api\LeituraController; 
 
 // routes/web.php
 
@@ -29,3 +30,4 @@ Route::get('/admin/rotas', [WebsiteController::class, 'adminRotas'])->name('admi
 Route::get('/api/arduino/latest', [WebsiteController::class, 'arduinoLatest'])->name('arduino.latest');
 Route::post('/admin/clientes/salvar', [AdminController::class, 'salvarCliente'])->name('admin.clientes.salvar');
 Route::post('/admin/clientes/{id}/excluir', [AdminController::class, 'excluirCliente'])->name('admin.clientes.excluir');
+Route::get('/arduino/latest', [LeituraController::class, 'latest'])->name('arduino.latest');

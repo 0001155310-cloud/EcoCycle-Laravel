@@ -70,11 +70,15 @@
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    // Recupera a leitura inicial enviada pelo Controller PHP (se houver)
     const initial = @json($latest ?? null);
+
+    // 1. Gráfico de Linha (Umidade em Tempo Real)
     const liveHumidityChart = new Chart(document.getElementById('liveHumidityChart').getContext('2d'), {
         type: 'line',
         data: {
-            labels: ['00s', '01s', '02s', '03s', '04s'],
+            // Inicia com marcações vazias que serão substituídas pelos horários reais (HH:MM:SS)
+            labels: ['--', '--', '--', '--', '--'],
             datasets: [{
                 label: 'Umidade (%)',
                 data: [initial?.umidade ?? 0, initial?.umidade ?? 0, initial?.umidade ?? 0, initial?.umidade ?? 0, initial?.umidade ?? 0],
@@ -85,9 +89,14 @@
                 pointRadius: 2
             }]
         },
-        options: { responsive: true, animation: { duration: 300 }, scales: { y: { beginAtZero: false, suggestedMin: 0, suggestedMax: 100 } } }
+        options: { 
+            responsive: true, 
+            animation: { duration: 300 }, 
+            scales: { y: { beginAtZero: false, suggestedMin: 0, suggestedMax: 100 } } 
+        }
     });
 
+    // 2. Gráfico de Rosca (Distribuição da Qualidade)
     const qualityChart = new Chart(document.getElementById('qualityChart').getContext('2d'), {
         type: 'doughnut',
         data: {
@@ -102,6 +111,7 @@
         options: { responsive: true, cutout: '67%' }
     });
 
+    // 3. Gráfico Radar (Performance Geral)
     const radarChart = new Chart(document.getElementById('radarChart').getContext('2d'), {
         type: 'radar',
         data: {
@@ -119,6 +129,7 @@
 
     const deviceWarning = document.getElementById('deviceWarning');
 
+    // Função que atualiza todos os componentes visuais da tela com os novos dados
     function updateDashboard(data) {
         const umidade = Number(data?.umidade ?? 0);
         const temperatura = Number(data?.temperatura ?? 0);
@@ -126,6 +137,7 @@
         const ph = Number(data?.ph ?? 0);
         const gas = Number(data?.gas ?? 0);
 
+        // Se não houver dados válidos vindos do banco
         if (!data || Object.keys(data).length === 0) {
             deviceWarning.style.display = 'block';
             document.getElementById('val-umidade').textContent = '0%';
@@ -137,11 +149,13 @@
 
         deviceWarning.style.display = 'none';
 
+        // Atualiza os Cards Principais (Texto)
         document.getElementById('val-umidade').textContent = `${umidade.toFixed(0)}%`;
         document.getElementById('val-temperatura').textContent = `${temperatura.toFixed(1)}°C`;
         document.getElementById('val-peso').textContent = `${peso.toFixed(1)} kg`;
         document.getElementById('status-text').textContent = (data?.status_contaminacao || 'nao_analisado').replace(/_/g, ' ');
 
+        // Atualiza os Indicadores de Barra Secundários
         document.getElementById('info-ph').textContent = ph.toFixed(1);
         document.getElementById('info-gas').textContent = `${gas.toFixed(0)} ppm`;
         document.getElementById('info-peso').textContent = `${peso.toFixed(1)} kg`;
@@ -149,26 +163,54 @@
         document.getElementById('bar-gas').style.width = `${Math.min(100, gas / 2.5)}%`;
         document.getElementById('bar-peso').style.width = `${Math.min(100, peso * 5)}%`;
 
+        // === Atualização Dinâmica do Gráfico de Linha ===
         const liveValues = liveHumidityChart.data.datasets[0].data;
-        liveValues.shift();
-        liveValues.push(Number.isFinite(umidade) ? umidade : 0);
-        liveHumidityChart.data.labels = liveHumidityChart.data.labels.map((_, index) => `${index}s`);
-        liveHumidityChart.update();
+        liveValues.shift(); // Remove o valor mais antigo do array
+        liveValues.push(Number.isFinite(umidade) ? umidade : 0); // Adiciona a nova umidade ao final
 
-        qualityChart.data.datasets[0].data = [Math.max(10, 100 - umidade / 2), Math.max(5, umidade / 3), Math.max(2, 10 + (gas / 60))];
+        // Captura a hora atual do computador do cliente para a legenda
+        const agora = new Date();
+        const horaFormatada = agora.toLocaleTimeString('pt-BR', { hour12: false });
+        
+        liveHumidityChart.data.labels.shift(); // Remove a legenda de tempo antiga
+        liveHumidityChart.data.labels.push(horaFormatada); // Adiciona o novo horário
+        
+        liveHumidityChart.update(); // Re-renderiza o gráfico na tela
+        
+        // === Atualização do Gráfico de Pizza ===
+        qualityChart.data.datasets[0].data = [
+            Math.max(10, 100 - umidade / 2), 
+            Math.max(5, umidade / 3), 
+            Math.max(2, 10 + (gas / 60)),
+            0 // Remove a barra "sem análise" já que temos dados reais
+        ];
         qualityChart.update();
+
+        // === Atualização Opcional do Gráfico Radar ===
+        // Ajusta os eixos baseado nos valores calculados da compostagem
+        radarChart.data.datasets[0].data = [umidade, temperatura * 2, 75, 80, 90]; 
+        radarChart.update();
     }
 
+    // Função que faz o "Fetch" assíncrono na rota do Laravel para obter o último registro
     function refreshData() {
         fetch('{{ route('arduino.latest') }}')
             .then(r => r.json())
             .then(result => {
-                if (result?.data) updateDashboard(result.data);
+                // Se a API retornar um objeto válido em "data", repassa para a atualização
+                if (result?.data) {
+                    updateDashboard(result.data);
+                }
             })
-            .catch(() => {});
+            .catch(() => {
+                console.log('Erro ao buscar dados do sensor.');
+            });
     }
 
+    // Carrega o estado inicial ao abrir a página
     updateDashboard(initial || {});
+    
+    // Define o temporizador para rodar a função refreshData a cada 1000ms (1 segundo)
     setInterval(refreshData, 1000);
 </script>
 @endsection
