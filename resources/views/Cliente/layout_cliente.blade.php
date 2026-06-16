@@ -38,18 +38,47 @@
             </div>
         </div>
         <nav class="sidebar-nav">
-            <div class="nav-group">Navegação</div>
-            <a class="nav-link active" href="{{ route('cliente.home') }}"> Dashboard</a>
-            <a class="nav-link" href="{{ route('cliente.home') }}#graficos"> Monitoramento</a>
-            <a class="nav-link" href="{{ route('cliente.configuracao') }}"> Configuração</a>
-            <a class="nav-link" href="{{ route('cliente.dispositivos') }}"> Dados dos dispositivos</a>
-            <a class="nav-link" href="{{ route('cliente.historico') }}"> Históricos</a>
-            <a class="nav-link" href="{{ route('cliente.faq') }}"> FAQ &amp; ajuda</a>
-            <form action="{{ route('logout') }}" method="POST" class="nav-link logout" style="padding:0;">
-                @csrf
-                <button type="submit" class="nav-link logout" style="width:100%; border:none; text-align:left;">↩ Sair</button>
-            </form>
-        </nav>
+    <div class="nav-group">Navegação</div>
+
+    <a class="nav-link {{ request()->routeIs('cliente.home') ? 'active' : '' }}"
+       href="{{ route('cliente.home') }}">
+        Dashboard
+    </a>
+
+    <a class="nav-link {{ request()->routeIs('cliente.home') ? 'active' : '' }}"
+       href="{{ route('cliente.home') }}#graficos">
+        Monitoramento
+    </a>
+
+    <a class="nav-link {{ request()->routeIs('cliente.configuracao*') ? 'active' : '' }}"
+       href="{{ route('cliente.configuracao') }}">
+        Configuração
+    </a>
+
+    <a class="nav-link {{ request()->routeIs('cliente.dispositivos*') ? 'active' : '' }}"
+       href="{{ route('cliente.dispositivos') }}">
+        Dados dos dispositivos
+    </a>
+
+    <a class="nav-link {{ request()->routeIs('cliente.historico*') ? 'active' : '' }}"
+       href="{{ route('cliente.historico') }}">
+        Históricos
+    </a>
+
+    <a class="nav-link {{ request()->routeIs('cliente.faq*') ? 'active' : '' }}"
+       href="{{ route('cliente.faq') }}">
+        FAQ & ajuda
+    </a>
+
+    <form action="{{ route('logout') }}" method="POST" class="nav-link logout" style="padding:0;">
+        @csrf
+        <button type="submit"
+                class="nav-link logout"
+                style="width:100%; border:none; text-align:left;">
+            ↩ Sair
+        </button>
+    </form>
+</nav>
     </aside>
 
     <main class="main">

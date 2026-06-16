@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Admin - EcoCycle')</title>
-    <link rel="stylesheet" href="{{ asset('assets/css/app.css') }}">
+    <link rel="stylesheet" href="{{ asset('/assets_admin/css/app.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/charts.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     @yield('styles')
@@ -66,4 +66,4 @@
     <script src="{{ asset('assets/js/script.js') }}"></script>
     @yield('scripts')
 </body>
-</html>
+</html>  

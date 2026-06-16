@@ -18,7 +18,9 @@ return new class extends Migration
             $table->float('gas')->nullable()->comment('Concentração de gás (ppm)');
             $table->string('status_contaminacao')->default('nao_analisado')
                   ->comment('aprovado | contaminado | inspecao | nao_analisado');
-            $table->boolean('plastico_detectado')->default(false);
+            $table->boolean('plastico_detectado
+            
+            ')->default(false);
             $table->string('origem_cliente')->nullable()->comment('Nome/ID do cliente que entregou');
             $table->text('observacao')->nullable();
             $table->timestamps();

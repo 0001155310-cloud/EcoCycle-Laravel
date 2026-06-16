@@ -2,6 +2,30 @@
 
 @section('title', 'Clientes - EcoCycle')
 
+@section('styles')
+<style>
+    .chart-container {
+        position: relative;
+    }
+    
+    .chart-container canvas {
+        max-width: 100%;
+    }
+    
+    @media (max-width: 768px) {
+        .chart-container {
+            padding: 1rem !important;
+        }
+        .projects-container {
+            gap: 1rem !important;
+        }
+        .card-form {
+            flex-direction: column !important;
+        }
+    }
+</style>
+@endsection
+
 @section('content')
 <section class="dashboard-hero">
     <div class="dash-top">
@@ -75,18 +99,54 @@
         type: 'bar',
         data: {
             labels: tipoLabels,
-            datasets: [{ label: 'Clientes por tipo', data: tipoData, backgroundColor: ['#27ae60', '#1e5d3b'] }]
+            datasets: [{ 
+                label: 'Clientes por tipo', 
+                data: tipoData, 
+                backgroundColor: ['#27ae60', '#1e5d3b'] 
+            }]
         },
-        options: { responsive: true }
+        options: { 
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    labels: { font: { size: window.innerWidth < 768 ? 11 : 12 } }
+                }
+            },
+            scales: { 
+                x: { ticks: { font: { size: window.innerWidth < 768 ? 10 : 11 } } },
+                y: { ticks: { font: { size: window.innerWidth < 768 ? 10 : 11 } } }
+            }
+        }
     });
 
     new Chart(document.getElementById('clienteReadChart').getContext('2d'), {
         type: 'line',
         data: {
             labels: ['Umidade', 'Temperatura', 'pH'],
-            datasets: [{ label: 'Última leitura', data: [Number(latest?.umidade ?? 0), Number(latest?.temperatura ?? 0), Number(latest?.ph ?? 0)], borderColor: '#27ae60', backgroundColor: 'rgba(39,174,96,0.12)', fill: true, tension: 0.35 }]
+            datasets: [{ 
+                label: 'Última leitura', 
+                data: [Number(latest?.umidade ?? 0), Number(latest?.temperatura ?? 0), Number(latest?.ph ?? 0)], 
+                borderColor: '#27ae60', 
+                backgroundColor: 'rgba(39,174,96,0.12)', 
+                fill: true, 
+                tension: 0.35,
+                pointRadius: window.innerWidth < 768 ? 1 : 2
+            }]
         },
-        options: { responsive: true }
+        options: { 
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    labels: { font: { size: window.innerWidth < 768 ? 11 : 12 } }
+                }
+            },
+            scales: { 
+                x: { ticks: { font: { size: window.innerWidth < 768 ? 10 : 11 } } },
+                y: { ticks: { font: { size: window.innerWidth < 768 ? 10 : 11 } } }
+            }
+        }
     });
 </script>
 @endsection

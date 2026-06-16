@@ -112,6 +112,26 @@
             width: 100%;
             background: var(--white);
             border-radius: 24px;
+            position: relative;
+        }
+
+        .chart-container canvas {
+            max-width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .chart-container {
+                padding: 1rem;
+            }
+            .projects-container {
+                gap: 1rem;
+            }
+            .metric-card .metric-value {
+                font-size: 1.8rem !important;
+            }
+            .metrics-grid {
+                grid-template-columns: 1fr !important;
+            }
         }
     </style>
     @endsection
@@ -261,10 +281,24 @@
                 borderColor: '#27ae60',
                 backgroundColor: 'rgba(39, 174, 96, 0.12)',
                 tension: 0.35,
-                fill: true
+                fill: true,
+                pointRadius: window.innerWidth < 768 ? 1 : 2
             }]
         },
-        options: { responsive: true, animation: { duration: 800 } }
+        options: { 
+            responsive: true,
+            maintainAspectRatio: true,
+            animation: { duration: 800 },
+            plugins: {
+                legend: {
+                    labels: { font: { size: window.innerWidth < 768 ? 11 : 12 } }
+                }
+            },
+            scales: { 
+                x: { ticks: { font: { size: window.innerWidth < 768 ? 10 : 11 } } },
+                y: { ticks: { font: { size: window.innerWidth < 768 ? 10 : 11 } } }
+            }
+        }
     });
 
     const ctxProfit = document.getElementById('profitChart').getContext('2d');
@@ -278,7 +312,20 @@
                 backgroundColor: ['#1e5d3b', '#2ecc71', '#f1c40f']
             }]
         },
-        options: { responsive: true, animation: { duration: 800 } }
+        options: { 
+            responsive: true,
+            maintainAspectRatio: true,
+            animation: { duration: 800 },
+            plugins: {
+                legend: {
+                    labels: { font: { size: window.innerWidth < 768 ? 11 : 12 } }
+                }
+            },
+            scales: { 
+                x: { ticks: { font: { size: window.innerWidth < 768 ? 10 : 11 } } },
+                y: { ticks: { font: { size: window.innerWidth < 768 ? 10 : 11 } } }
+            }
+        }
     });
 
     const qualityChart = new Chart(document.getElementById('qualityChart').getContext('2d'), {
@@ -291,7 +338,17 @@
                 borderWidth: 0
             }]
         },
-        options: { responsive: true, cutout: '65%' }
+        options: { 
+            responsive: true,
+            maintainAspectRatio: true,
+            cutout: '65%',
+            plugins: {
+                legend: {
+                    labels: { font: { size: window.innerWidth < 768 ? 11 : 12 } },
+                    position: window.innerWidth < 768 ? 'bottom' : 'right'
+                }
+            }
+        }
     });
 
     const radarChart = new Chart(document.getElementById('radarChart').getContext('2d'), {
@@ -306,7 +363,23 @@
                 pointBackgroundColor: '#27ae60'
             }]
         },
-        options: { responsive: true, scales: { r: { suggestedMin: 0, suggestedMax: 100 } } }
+        options: { 
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    labels: { font: { size: window.innerWidth < 768 ? 10 : 12 } }
+                }
+            },
+            scales: { 
+                r: { 
+                    suggestedMin: 0, 
+                    suggestedMax: 100,
+                    ticks: { font: { size: window.innerWidth < 768 ? 9 : 11 } },
+                    pointLabels: { font: { size: window.innerWidth < 768 ? 10 : 12 } }
+                } 
+            } 
+        }
     });
 
     function updateAdminCards(data) {

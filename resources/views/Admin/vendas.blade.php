@@ -2,6 +2,30 @@
 
 @section('title', 'Monitoramento de vendas - EcoCycle')
 
+@section('styles')
+<style>
+    .chart-container {
+        position: relative;
+    }
+    
+    .chart-container canvas {
+        max-width: 100%;
+    }
+    
+    @media (max-width: 768px) {
+        .chart-container {
+            padding: 1rem !important;
+        }
+        .projects-container {
+            gap: 1rem !important;
+        }
+        .metric-card .metric-value {
+            font-size: 1.8rem !important;
+        }
+    }
+</style>
+@endsection
+
 @section('content')
 <section class="dashboard-hero">
     <div class="dash-top">
@@ -46,21 +70,54 @@
         type: 'line',
         data: {
             labels: ['Umidade', 'Temperatura'],
-            datasets: [{ label: 'Leitura atual', data: [Number(latest?.umidade ?? 0), Number(latest?.temperatura ?? 0)], borderColor: '#27ae60', backgroundColor: 'rgba(39,174,96,0.12)', fill: true, tension: 0.35 }]
+            datasets: [{ 
+                label: 'Leitura atual', 
+                data: [Number(latest?.umidade ?? 0), Number(latest?.temperatura ?? 0)], 
+                borderColor: '#27ae60', 
+                backgroundColor: 'rgba(39,174,96,0.12)', 
+                fill: true, 
+                tension: 0.35,
+                pointRadius: window.innerWidth < 768 ? 1 : 2
+            }]
         },
-        options: { responsive: true }
+        options: { 
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    labels: { font: { size: window.innerWidth < 768 ? 11 : 12 } }
+                }
+            },
+            scales: { 
+                x: { ticks: { font: { size: window.innerWidth < 768 ? 10 : 11 } } },
+                y: { ticks: { font: { size: window.innerWidth < 768 ? 10 : 11 } } }
+            }
+        }
     });
     new Chart(document.getElementById('salesPie').getContext('2d'), {
         type: 'doughnut',
         data: {
             labels: ['Ideal', 'Atenção', 'Risco'],
-            datasets: [{ data: [
-                Math.max(10, 100 - (Number(latest?.umidade ?? 0) / 2)),
-                Math.max(5, (Number(latest?.umidade ?? 0) / 3)),
-                Math.max(2, 10 + ((Number(latest?.gas ?? 0) / 60)))
-            ], backgroundColor: ['#27ae60', '#1e5d3b', '#f1c40f'] }]
+            datasets: [{ 
+                data: [
+                    Math.max(10, 100 - (Number(latest?.umidade ?? 0) / 2)),
+                    Math.max(5, (Number(latest?.umidade ?? 0) / 3)),
+                    Math.max(2, 10 + ((Number(latest?.gas ?? 0) / 60)))
+                ], 
+                backgroundColor: ['#27ae60', '#1e5d3b', '#f1c40f'] 
+            }]
         },
-        options: { responsive: true, cutout: '65%' }
+        options: { 
+            responsive: true,
+            maintainAspectRatio: true,
+            cutout: '65%',
+            plugins: {
+                legend: {
+                    labels: { font: { size: window.innerWidth < 768 ? 11 : 12 } },
+                    position: window.innerWidth < 768 ? 'bottom' : 'right'
+                }
+            }
+        }
     });
 </script>
 @endsection

@@ -2,6 +2,30 @@
 
 @section('title', 'Dados dos dispositivos - EcoCycle')
 
+@section('styles')
+<style>
+    .chart-container {
+        position: relative;
+    }
+    
+    .chart-container canvas {
+        max-width: 100%;
+    }
+    
+    @media (max-width: 768px) {
+        .chart-container {
+            padding: 1rem !important;
+        }
+        .projects-container {
+            gap: 1rem !important;
+        }
+        .metric-card .metric-value {
+            font-size: 1.8rem !important;
+        }
+    }
+</style>
+@endsection
+
 @section('content')
 <section class="dashboard-hero">
     <div class="dash-top">
@@ -65,13 +89,54 @@
     const initial = deviceData[deviceSelect.value] ?? null;
     const mainChart = new Chart(document.getElementById('mainChart').getContext('2d'), {
         type: 'line',
-        data: { labels: ['Atual', 'Prévia', 'Meta'], datasets: [{ label: 'Indicador', data: [0, 0, 0], borderColor: '#27ae60', backgroundColor: 'rgba(39,174,96,0.12)', tension: 0.35, fill: true }] },
-        options: { responsive: true, animation: { duration: 300 } }
+        data: { 
+            labels: ['Atual', 'Prévia', 'Meta'], 
+            datasets: [{ 
+                label: 'Indicador', 
+                data: [0, 0, 0], 
+                borderColor: '#27ae60', 
+                backgroundColor: 'rgba(39,174,96,0.12)', 
+                tension: 0.35, 
+                fill: true,
+                pointRadius: window.innerWidth < 768 ? 1 : 2
+            }] 
+        },
+        options: { 
+            responsive: true,
+            maintainAspectRatio: true,
+            animation: { duration: 300 },
+            plugins: {
+                legend: {
+                    labels: { font: { size: window.innerWidth < 768 ? 11 : 12 } }
+                }
+            },
+            scales: { 
+                x: { ticks: { font: { size: window.innerWidth < 768 ? 10 : 11 } } },
+                y: { ticks: { font: { size: window.innerWidth < 768 ? 10 : 11 } } }
+            }
+        }
     });
     const miniChart = new Chart(document.getElementById('miniChart').getContext('2d'), {
         type: 'doughnut',
-        data: { labels: ['Ideal', 'Atenção', 'Risco'], datasets: [{ data: [50, 30, 20], backgroundColor: ['#27ae60', '#1e5d3b', '#f1c40f'], borderWidth: 0 }] },
-        options: { responsive: true, cutout: '68%' }
+        data: { 
+            labels: ['Ideal', 'Atenção', 'Risco'], 
+            datasets: [{ 
+                data: [50, 30, 20], 
+                backgroundColor: ['#27ae60', '#ffd000', '#f10f0f'], 
+                borderWidth: 0 
+            }] 
+        },
+        options: { 
+            responsive: true,
+            maintainAspectRatio: true,
+            cutout: '68%',
+            plugins: {
+                legend: {
+                    labels: { font: { size: window.innerWidth < 768 ? 11 : 12 } },
+                    position: window.innerWidth < 768 ? 'bottom' : 'right'
+                }
+            }
+        }
     });
 
     function updateDashboard(data) {

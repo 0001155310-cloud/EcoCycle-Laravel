@@ -1,6 +1,31 @@
 @extends('Cliente.layout_cliente')
 @section('title', 'Monitoramento Real-Time - EcoCycle')
 
+@section('styles')
+<style>
+    .chart-container canvas {
+        max-width: 100%;
+    }
+    
+    @media (max-width: 768px) {
+        .chart-container {
+            padding: 1rem !important;
+            margin-bottom: 1.5rem;
+        }
+        .projects-container {
+            gap: 1rem !important;
+        }
+        .metric-card .metric-value {
+            font-size: 1.8rem !important;
+        }
+        .indicator-grid {
+            flex-direction: column;
+            gap: 1rem;
+        }
+    }
+</style>
+@endsection
+
 @section('content')
 <section id="dashboard" class="dashboard-hero">
     <div class="dash-top">
@@ -86,13 +111,22 @@
                 backgroundColor: 'rgba(24, 206, 100, 0.14)',
                 tension: 0.35,
                 fill: true,
-                pointRadius: 2
+                pointRadius: window.innerWidth < 768 ? 1 : 2
             }]
         },
         options: { 
-            responsive: true, 
+            responsive: true,
+            maintainAspectRatio: true,
             animation: { duration: 300 }, 
-            scales: { y: { beginAtZero: false, suggestedMin: 0, suggestedMax: 100 } } 
+            plugins: {
+                legend: {
+                    labels: { font: { size: window.innerWidth < 768 ? 11 : 12 } }
+                }
+            },
+            scales: { 
+                y: { beginAtZero: false, suggestedMin: 0, suggestedMax: 100 },
+                x: { ticks: { font: { size: window.innerWidth < 768 ? 10 : 11 } } }
+            } 
         }
     });
 
@@ -108,7 +142,17 @@
                 borderColor: '#fff'
             }]
         },
-        options: { responsive: true, cutout: '67%' }
+        options: { 
+            responsive: true,
+            maintainAspectRatio: true,
+            cutout: '67%',
+            plugins: {
+                legend: {
+                    labels: { font: { size: window.innerWidth < 768 ? 11 : 12 } },
+                    position: window.innerWidth < 768 ? 'bottom' : 'right'
+                }
+            }
+        }
     });
 
     // 3. Gráfico Radar (Performance Geral)
@@ -124,7 +168,23 @@
                 pointBackgroundColor: '#27ae60'
             }]
         },
-        options: { responsive: true, scales: { r: { suggestedMin: 0, suggestedMax: 100 } } }
+        options: { 
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    labels: { font: { size: window.innerWidth < 768 ? 10 : 12 } }
+                }
+            },
+            scales: { 
+                r: { 
+                    suggestedMin: 0, 
+                    suggestedMax: 100,
+                    ticks: { font: { size: window.innerWidth < 768 ? 9 : 11 } },
+                    pointLabels: { font: { size: window.innerWidth < 768 ? 10 : 12 } }
+                } 
+            } 
+        }
     });
 
     const deviceWarning = document.getElementById('deviceWarning');
