@@ -15,6 +15,7 @@
     @media (max-width: 768px) {
         .chart-container {
             padding: 1rem !important;
+            margin-bottom: 1.5rem;
         }
         .projects-container {
             gap: 1rem !important;
@@ -66,6 +67,13 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     const latest = @json($latest ?? null);
+    const isMobile = window.innerWidth < 768;
+    const styles = getComputedStyle(document.documentElement);
+    const palette = {
+        primary: styles.getPropertyValue('--primary-color').trim() || '#14b8a6',
+        secondary: styles.getPropertyValue('--secondary-color').trim() || '#22c55e',
+        accent: styles.getPropertyValue('--accent-color').trim() || '#f59e0b'
+    };
     const salesChart = new Chart(document.getElementById('salesChart').getContext('2d'), {
         type: 'line',
         data: {
@@ -73,11 +81,12 @@
             datasets: [{ 
                 label: 'Leitura atual', 
                 data: [Number(latest?.umidade ?? 0), Number(latest?.temperatura ?? 0)], 
-                borderColor: '#27ae60', 
-                backgroundColor: 'rgba(39,174,96,0.12)', 
+                borderColor: palette.primary, 
+                backgroundColor: 'rgba(20, 184, 166, 0.12)', 
                 fill: true, 
                 tension: 0.35,
-                pointRadius: window.innerWidth < 768 ? 1 : 2
+                pointRadius: isMobile ? 2 : 4,
+                pointHoverRadius: 6
             }]
         },
         options: { 
@@ -85,12 +94,27 @@
             maintainAspectRatio: true,
             plugins: {
                 legend: {
-                    labels: { font: { size: window.innerWidth < 768 ? 11 : 12 } }
+                    labels: {
+                        color: styles.getPropertyValue('--text-main').trim() || '#e5eef8',
+                        font: { size: isMobile ? 11 : 12 }
+                    }
                 }
             },
             scales: { 
-                x: { ticks: { font: { size: window.innerWidth < 768 ? 10 : 11 } } },
-                y: { ticks: { font: { size: window.innerWidth < 768 ? 10 : 11 } } }
+                x: {
+                    ticks: {
+                        color: styles.getPropertyValue('--text-muted').trim() || '#93a4b8',
+                        font: { size: isMobile ? 10 : 11 }
+                    },
+                    grid: { color: 'rgba(148, 163, 184, 0.08)' }
+                },
+                y: {
+                    ticks: {
+                        color: styles.getPropertyValue('--text-muted').trim() || '#93a4b8',
+                        font: { size: isMobile ? 10 : 11 }
+                    },
+                    grid: { color: 'rgba(148, 163, 184, 0.08)' }
+                }
             }
         }
     });
@@ -104,7 +128,7 @@
                     Math.max(5, (Number(latest?.umidade ?? 0) / 3)),
                     Math.max(2, 10 + ((Number(latest?.gas ?? 0) / 60)))
                 ], 
-                backgroundColor: ['#27ae60', '#1e5d3b', '#f1c40f'] 
+                backgroundColor: [palette.secondary, palette.primary, palette.accent] 
             }]
         },
         options: { 
@@ -113,8 +137,11 @@
             cutout: '65%',
             plugins: {
                 legend: {
-                    labels: { font: { size: window.innerWidth < 768 ? 11 : 12 } },
-                    position: window.innerWidth < 768 ? 'bottom' : 'right'
+                    labels: {
+                        color: styles.getPropertyValue('--text-main').trim() || '#e5eef8',
+                        font: { size: isMobile ? 11 : 12 }
+                    },
+                    position: isMobile ? 'bottom' : 'right'
                 }
             }
         }

@@ -6,10 +6,24 @@
     <title>Login - EcoCycle</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/login.css">
+    <link rel="stylesheet" href="{{ asset('assets/css/login.css') }}">
     
     <style>
-        /* Remove this inline background when using video */
+        /* Estilização rápida para o checkbox ficar alinhado e bonito */
+        .admin-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 15px 0;
+            font-size: 0.9rem;
+            color: #4a5568;
+            cursor: pointer;
+        }
+        .admin-checkbox input {
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+        }
     </style>
 </head>
 <body>
@@ -32,9 +46,7 @@
             </aside>
 
             <section class="login-section">
-                <h3>Aceder à Conta</h3>
-
-                @if($errors->any() || session('error'))
+                <h3>Acessar a Conta</h3> @if($errors->any() || session('error'))
                     <div class="alert-box">
                         @if(session('error'))
                             <p>{{ session('error') }}</p>
@@ -61,6 +73,11 @@
                         <a href="#">Esqueceu a senha?</a>
                     </div>
 
+                    <label class="admin-checkbox">
+                        <input type="checkbox" name="is_admin" value="1" {{ old('is_admin') ? 'checked' : '' }}>
+                        <span>Entrar como Administrador</span>
+                    </label>
+
                     <div class="btn-group">
                         <button type="submit" class="btn-primary">Entrar</button>
                         <a href="{{ route('cadastro') }}" class="btn-secondary">Criar nova conta</a>
@@ -72,7 +89,8 @@
                 </footer>
             </section>
 
-        </div>
-    </main>
+            </div>
+        </main>
+    </div>
 </body>
 </html>

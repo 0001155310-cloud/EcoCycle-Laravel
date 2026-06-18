@@ -56,12 +56,31 @@ class WebsiteController extends Controller
                 ->withInput();
         }
 
+        // Tenta autenticar o usuário
         if (Auth::attempt(['email' => $request->email, 'password' => $request->senha])) {
-            $request->session()->regenerate();
+            $user = Auth::user();
 
+            // Verifica se a opção "Entrar como Administrador" foi marcada
+            if ($request->has('is_admin')) {
+                // Se NÃO for Admin (ID diferente de 2)
+                if ($user->tipo_acesso_id != 2) {
+                    Auth::logout(); // Desloga o usuário
+                    
+                    return redirect()->back()
+                        ->withErrors(['email' => 'Esta conta não possui privilégios de Administrador.'])
+                        ->withInput();
+                }
+
+                $request->session()->regenerate();
+                return redirect()->route('admin.home');
+            }
+
+            // Se não marcou admin, faz o login comum de cliente
+            $request->session()->regenerate();
             return redirect()->route('cliente.home');
         }
 
+        // Credenciais erradas
         return redirect()->back()
             ->withErrors(['email' => 'Usuário ou senha inválidos'])
             ->withInput();
@@ -78,12 +97,7 @@ class WebsiteController extends Controller
         return redirect()->route('home');
     }
 
-      
-
-    public function salvarCliente(Request $request)
-    {
-        return $this->cadastrarCliente($request);
-    }
+    // --- ACESSOS CLIENTE (Proteção básica de Login) ---
 
     public function homeCliente()
     {
@@ -142,18 +156,7 @@ class WebsiteController extends Controller
 
         $cliente->save();
 
-        return redirect()->back()->with('success', 'Configuração atualizada com sucesso.');
-    }
-
-    public function homeAdmin()
-    {
-        if (!Auth::check()) {
-            return redirect()->route('login');
-        }
-
-        $latest = LeituraArduino::latest()->first();
-
-        return view('Admin.home_admin', compact('latest'));
+        return redirect()->back()->with('success', 'Configuração updated com sucesso.');
     }
 
     public function historicoCliente()
@@ -202,10 +205,26 @@ class WebsiteController extends Controller
         return view('Cliente.dispositivos', compact('devices', 'deviceData'));
     }
 
+
+    // --- ACESSOS ADMIN (Proteção rígida contra penetras) ---
+
+    public function homeAdmin()
+    {
+        if (!Auth::check() || Auth::user()->tipo_acesso_id != 2) {
+            Auth::logout();
+            return redirect()->route('login')->with('error', 'Acesso restrito a administradores.');
+        }
+
+        $latest = LeituraArduino::latest()->first();
+
+        return view('Admin.home_admin', compact('latest'));
+    }
+
     public function adminClientes(Request $request)
     {
-        if (!Auth::check()) {
-            return redirect()->route('login');
+        if (!Auth::check() || Auth::user()->tipo_acesso_id != 2) {
+            Auth::logout();
+            return redirect()->route('login')->with('error', 'Acesso restrito a administradores.');
         }
 
         $latest = LeituraArduino::latest()->first();
@@ -230,8 +249,9 @@ class WebsiteController extends Controller
 
     public function adminVendas()
     {
-        if (!Auth::check()) {
-            return redirect()->route('login');
+        if (!Auth::check() || Auth::user()->tipo_acesso_id != 2) {
+            Auth::logout();
+            return redirect()->route('login')->with('error', 'Acesso restrito a administradores.');
         }
 
         $latest = LeituraArduino::latest()->first();
@@ -243,8 +263,9 @@ class WebsiteController extends Controller
 
     public function adminHistoricos()
     {
-        if (!Auth::check()) {
-            return redirect()->route('login');
+        if (!Auth::check() || Auth::user()->tipo_acesso_id != 2) {
+            Auth::logout();
+            return redirect()->route('login')->with('error', 'Acesso restrito a administradores.');
         }
 
         $latest = LeituraArduino::latest()->first();
@@ -255,8 +276,9 @@ class WebsiteController extends Controller
 
     public function adminRotas()
     {
-        if (!Auth::check()) {
-            return redirect()->route('login');
+        if (!Auth::check() || Auth::user()->tipo_acesso_id != 2) {
+            Auth::logout();
+            return redirect()->route('login')->with('error', 'Acesso restrito a administradores.');
         }
 
         $latest = LeituraArduino::latest()->first();

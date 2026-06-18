@@ -1,9 +1,11 @@
 <?php
+
 namespace App\Http;
 
 use App\Http\Controllers\Controller;
 use App\Models\Clientes;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth; // <-- Importado para fazer o login automático
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
@@ -42,7 +44,11 @@ class AdminController extends Controller
         $cl->cpf = $request->input('cpf');
         $cl->save();
 
-        return redirect()->back()->with('success', 'Cliente salvo com sucesso!');
+        // 1. Loga o cliente automaticamente para ele não cair na tela de login
+        Auth::login($cl);
+
+        // 2. Redireciona para a rota 'cliente.home' com a mensagem de sucesso
+        return redirect()->route('cliente.home')->with('success', 'Cadastro realizado com sucesso!');
     }
 
     public function excluirCliente($id)
@@ -52,5 +58,4 @@ class AdminController extends Controller
 
         return redirect()->back()->with('success', 'Cliente excluído com sucesso!');
     }
-    
 }

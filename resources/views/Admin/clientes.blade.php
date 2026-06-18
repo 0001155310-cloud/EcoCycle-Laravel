@@ -27,6 +27,7 @@
 @endsection
 
 @section('content')
+
 <section class="dashboard-hero">
     <div class="dash-top">
         <div>
@@ -56,11 +57,6 @@
         </div>
     </form>
 
-    <div class="projects-container">
-        <article class="project-item"><div class="chart-container"><span class="tag">Clientes</span><h3>Distribuição por tipo</h3><canvas id="tipoChart"></canvas></div></article>
-        <article class="project-item"><div class="chart-container"><span class="tag">Última leitura</span><h3>Leitura do banco</h3><canvas id="clienteReadChart"></canvas></div></article>
-    </div>
-
     <div class="tcard">
         <div class="tcard-head"><h3>Lista de clientes</h3></div>
         <div class="t-scroll">
@@ -83,7 +79,12 @@
             </table>
         </div>
     </div>
-</section>
+    </section>
+
+    <div class="projects-container">
+        <article class="project-item"><div class="chart-container"><span class="tag">Clientes</span><h3>Distribuição por tipo</h3><canvas id="tipoChart"></canvas></div></article>
+        <article class="project-item"><div class="chart-container"><span class="tag">Última leitura</span><h3>Leitura do banco</h3><canvas id="clienteReadChart"></canvas></div></article>
+    </div>
 @endsection
 
 @section('scripts')

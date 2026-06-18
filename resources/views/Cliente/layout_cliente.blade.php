@@ -41,11 +41,6 @@
     <div class="nav-group">Navegação</div>
 
     <a class="nav-link {{ request()->routeIs('cliente.home') ? 'active' : '' }}"
-       href="{{ route('cliente.home') }}">
-        Dashboard
-    </a>
-
-    <a class="nav-link {{ request()->routeIs('cliente.home') ? 'active' : '' }}"
        href="{{ route('cliente.home') }}#graficos">
         Monitoramento
     </a>
@@ -57,7 +52,7 @@
 
     <a class="nav-link {{ request()->routeIs('cliente.dispositivos*') ? 'active' : '' }}"
        href="{{ route('cliente.dispositivos') }}">
-        Dados dos dispositivos
+        Dispositivos
     </a>
 
     <a class="nav-link {{ request()->routeIs('cliente.historico*') ? 'active' : '' }}"

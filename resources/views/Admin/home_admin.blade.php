@@ -1,407 +1,262 @@
 @extends('Admin.layout_admin')
-@section('title', 'Monitoramento Real-Time - EcoCycle')
-
-@section('styles')
-<style>
-        /* Grid de Métricas Rápidas */
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
-            margin-bottom: 3rem;
-        }
-
-        .card.card-animate {
-            background: var(--white);
-            padding: 1.5rem;
-            border-radius: 24px;
-            border: 1px solid rgba(46, 204, 113, 0.16);
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-        }
-
-        .card.card-animate:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.09);
-        }
-
-        .card-body {
-            padding: 0;
-        }
-
-        .card-body .fw-medium {
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            color: var(--text-muted);
-        }
-
-        .card-body .ff-secondary {
-            font-family: 'Inter', sans-serif;
-        }
-
-        .card-body h2 {
-            font-size: 2.4rem;
-            margin: 0.8rem 0;
-            color: var(--primary-color);
-        }
-
-        .card-body p {
-            margin: 0;
-            color: var(--text-muted);
-        }
-
-        .avatar-sm {
-            width: 3.5rem;
-            height: 3.5rem;
-        }
-
-        .avatar-title {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            color: var(--white);
-            box-shadow: inset 0 0 0 2px rgba(255,255,255,0.18);
-        }
-
-        .avatar-title.bg-primary {
-            background: radial-gradient(circle at top left, rgba(30, 93, 59, 0.8), rgba(46, 204, 113, 0.3));
-        }
-
-        .avatar-title.bg-warning {
-            background: radial-gradient(circle at top left, rgba(46, 204, 113, 0.85), rgba(46, 204, 113, 0.35));
-        }
-
-        .avatar-title.bg-success {
-            background: radial-gradient(circle at top left, rgba(39, 174, 96, 0.85), rgba(39, 174, 96, 0.35));
-        }
-
-        .avatar-title svg {
-            stroke: currentColor;
-            width: 1.4rem;
-            height: 1.4rem;
-        }
-
-        .badge {
-            font-size: 0.8rem;
-            padding: 0.35rem 0.7rem;
-            border-radius: 999px;
-        }
-
-        .metrics-panel {
-            background: #ffffff;
-            padding: 2rem;
-            border-radius: 28px;
-            box-shadow: var(--shadow);
-            margin-bottom: 3rem;
-            border: 1px solid rgba(46, 204, 113, 0.12);
-        }
-
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 24px;
-            margin-bottom: 0;
-        }
-
-        /* Ajuste para os gráficos ocuparem o container de projetos */
-        .chart-container {
-            padding: 2rem;
-            width: 100%;
-            background: var(--white);
-            border-radius: 24px;
-            position: relative;
-        }
-
-        .chart-container canvas {
-            max-width: 100%;
-        }
-
-        @media (max-width: 768px) {
-            .chart-container {
-                padding: 1rem;
-            }
-            .projects-container {
-                gap: 1rem;
-            }
-            .metric-card .metric-value {
-                font-size: 1.8rem !important;
-            }
-            .metrics-grid {
-                grid-template-columns: 1fr !important;
-            }
-        }
-    </style>
-    @endsection
+@section('title', 'Monitoramento Global - EcoCycle')
 
 @section('content')
-<section id="dashboard" class="dashboard-hero">
-    <div class="dash-top">
+<section id="dashboard" class="dashboard-hero" style="padding: 1.5rem; background-color: #f8fafc;">
+    <div class="dash-top" style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
         <div>
-            <h2>Painel de Controle Arduino</h2>
-            <p>Acompanhe a saúde da sua compostagem e os indicadores do processo em tempo real.</p>
+            <h2 style="color: #1e293b; font-weight: 700; margin-bottom: 0.25rem;">Painel de Controle Admin</h2>
+            <p style="color: #64748b; font-size: 0.95rem;">Visão consolidada e agregada de todos os módulos de compostagem ativos no sistema.</p>
         </div>
-        <span class="live-pill"><span class="live-dot"></span>Conexão com a base dos arduinos</span>
+        <span class="live-pill" style="background: #e2e8f0; color: #334155; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem;">
+            <span class="live-dot" style="width: 8px; height: 8px; background: #22c55e; border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite;"></span>
+            Média Global (Tempo Real)
+        </span>
     </div>
 
-        <div class="metrics-panel">
-            <div class="metrics-grid">
-                <div class="card card-animate">
-                    <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <p class="fw-medium text-muted mb-0">Umidade</p>
-                            <h2 class="mt-4 ff-secondary fw-semibold">
-                                <span class="counter-value" id="admin-umidade">--</span>%
-                            </h2>
-                            <p class="mb-0 text-muted">
-                                <span class="badge bg-light text-success mb-0">Tempo real</span>
-                                desde o sensor Arduino
-                            </p>
-                        </div>
-                        <div>
-                            <div class="avatar-sm flex-shrink-0">
-                                <span class="avatar-title bg-primary rounded-circle fs-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-users">
-                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                        <circle cx="9" cy="7" r="4"></circle>
-                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                                    </svg>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <div class="metrics" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        
+        <div class="mcard" style="background: #ffffff; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(51, 65, 85, 0.05); overflow: hidden; border: 1px solid #e2e8f0; transition: transform 0.2s;">
+            <div style="background: linear-gradient(90deg, #f1f5f9, #ffffff); padding: 1rem 1.5rem; border-bottom: 1px solid #f1f5f9;">
+                <div class="mcard-label" style="color: #475569; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Umidade Média Global</div>
             </div>
-
-            <div class="card card-animate">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <p class="fw-medium text-muted mb-0">Temperatura</p>
-                            <h2 class="mt-4 ff-secondary fw-semibold">
-                                <span class="counter-value" id="admin-temperatura">--</span>°C
-                            </h2>
-                            <p class="mb-0 text-muted">
-                                <span class="badge bg-light text-warning mb-0">Monitorado</span>
-                                pelo sistema de leitura
-                            </p>
-                        </div>
-                        <div>
-                            <div class="avatar-sm flex-shrink-0">
-                                <span class="avatar-title bg-warning rounded-circle fs-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trending-down">
-                                        <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
-                                        <polyline points="17 18 23 18 23 12"></polyline>
-                                    </svg>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card card-animate">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <p class="fw-medium text-muted mb-0">Status</p>
-                            <h2 class="mt-4 ff-secondary fw-semibold" id="admin-status">--</h2>
-                            <p class="mb-0 text-muted">
-                                <span class="badge bg-light text-success mb-0">Atualizado</span>
-                                conforme a leitura mais recente
-                            </p>
-                        </div>
-                        <div>
-                            <div class="avatar-sm flex-shrink-0">
-                                <span class="avatar-title bg-success rounded-circle fs-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-dollar-sign">
-                                        <circle cx="12" cy="12" r="8"></circle>
-                                        <line x1="12" y1="6" x2="12" y2="18"></line>
-                                        <path d="M16 8a4 4 0 0 0-4-4 4 4 0 0 0-4 4 4 4 0 0 0 4 4h4"></path>
-                                    </svg>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
+            <div style="padding: 1.5rem;">
+                <div class="mcard-value" style="font-size: 2.5rem; font-weight: 800; color: #0f172a; margin-bottom: 0.5rem;"><span id="admin-umidade">--</span>%</div>
+                <div class="mcard-sub" style="font-size: 0.85rem; color: #64748b; display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="badge" style="background: #e0f2fe; color: #0369a1; padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 0.75rem;">MÉDIA</span>
+                    Todos os sensores ativos
                 </div>
             </div>
         </div>
-        </div>
 
-        <div class="projects-container">
-            <div class="project-item">
-                <div class="chart-container">
-                    <span class="tag">Leitura Arduino</span>
-                    <h3>Umidade e temperatura</h3>
-                    <canvas id="humidityChart"></canvas>
+        <div class="mcard" style="background: #ffffff; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(51, 65, 85, 0.05); overflow: hidden; border: 1px solid #e2e8f0; transition: transform 0.2s;">
+            <div style="background: linear-gradient(90deg, #fff7ed, #ffffff); padding: 1rem 1.5rem; border-bottom: 1px solid #fff7ed;">
+                <div class="mcard-label" style="color: #ea580c; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Temperatura Média</div>
+            </div>
+            <div style="padding: 1.5rem;">
+                <div class="mcard-value" style="font-size: 2.5rem; font-weight: 800; color: #431407; margin-bottom: 0.5rem;"><span id="admin-temperatura">--</span>°C</div>
+                <div class="mcard-sub" style="font-size: 0.85rem; color: #64748b; display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="badge" style="background: #ffedd5; color: #ea580c; padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 0.75rem;">MÓDULOS</span>
+                    Média térmica dos canteiros
                 </div>
             </div>
+        </div>
 
-            <div class="project-item">
-                <div class="chart-container">
-                    <span class="tag">Indicadores</span>
-                    <h3>pH, gás e peso do material</h3>
+        <div class="mcard" style="background: #ffffff; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(51, 65, 85, 0.05); overflow: hidden; border: 1px solid #e2e8f0; transition: transform 0.2s;">
+            <div style="background: linear-gradient(90deg, #f0fdf4, #ffffff); padding: 1rem 1.5rem; border-bottom: 1px solid #f0fdf4;">
+                <div class="mcard-label" style="color: #16a34a; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Infraestrutura Ativa</div>
+            </div>
+            <div style="padding: 1.5rem;">
+                <div class="mcard-value" style="font-size: 2.5rem; font-weight: 800; color: #16a34a; margin-bottom: 0.5rem;"><span id="admin-status">--</span> <span style="font-size: 1.25rem; font-weight: 500; color: #64748b;">online</span></div>
+                <div class="mcard-sub" style="font-size: 0.85rem; color: #64748b; display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="badge" style="background: #dcfce7; color: #15803d; padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 0.75rem;">REDE</span>
+                    Módulos integrados na malha
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 1.5rem; width: 100%;">
+        
+        <div class="ccard" style="min-height: 380px; display: flex; flex-direction: column; width: 100%; background: #ffffff; padding: 1.5rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); border: 1px solid #e2e8f0;">
+            <div class="ccard-title" style="font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-bottom: 1rem;">Histórico de Umidade Média Global</div>
+            <div style="flex: 1; position: relative; width: 100%;">
+                <canvas id="humidityChart"></canvas>
+            </div>
+        </div>
+
+        <div class="charts" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; width: 100%;">
+            
+            <div class="ccard" style="min-height: 340px; display: flex; flex-direction: column; background: #ffffff; padding: 1.5rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); border: 1px solid #e2e8f0;">
+                <div class="ccard-title" style="font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-bottom: 1rem;">Médias de pH, Gás e Peso Total</div>
+                <div style="flex: 1; position: relative; width: 100%;">
                     <canvas id="profitChart"></canvas>
                 </div>
             </div>
-            <div class="project-item">
-                <div class="chart-container">
-                    <span class="tag">Resumo</span>
-                    <h3>Qualidade do sistema</h3>
-                    <canvas id="qualityChart"></canvas>
+
+            <div class="ccard" style="min-height: 340px; display: flex; flex-direction: column; background: #ffffff; padding: 1.5rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); border: 1px solid #e2e8f0;">
+                <div class="ccard-title" style="font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-bottom: 1rem;">Histórico de Temperatura Geral</div>
+                <div style="flex: 1; position: relative; width: 100%;">
+                    <canvas id="temperatureChart"></canvas>
                 </div>
             </div>
-            <div class="project-item">
-                <div class="chart-container">
-                    <span class="tag">Risco</span>
-                    <h3>Eficiência e estabilidade do processo</h3>
-                    <canvas id="radarChart"></canvas>
+
+            <div class="ccard" style="min-height: 340px; display: flex; flex-direction: column; background: #ffffff; padding: 1.5rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); border: 1px solid #e2e8f0;">
+                <div class="ccard-title" style="font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-bottom: 1rem;">Latência da API / Resposta da Ponte (ms)</div>
+                <div style="flex: 1; position: relative; width: 100%;">
+                    <canvas id="networkChart"></canvas>
                 </div>
             </div>
+
         </div>
-    </section>
-    @endsection
+    </div>
+</section>
+
+<style>
+    @keyframes pulse {
+        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+        70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+    }
+</style>
+@endsection
 
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     const initial = @json($latest ?? null);
-    const ctxHum = document.getElementById('humidityChart').getContext('2d');
-    const humidityChart = new Chart(ctxHum, {
+    const MAX_PONTOS_GRAFICO = 20; 
+    let ultimoIdInserido = null;
+
+    Chart.defaults.set('plugins.legend', {
+        labels: { boxWidth: 10, font: { size: 12, family: "'Inter', sans-serif", weight: '600' } }
+    });
+
+    // 1. Linha - Umidade Média Global
+    const humidityChart = new Chart(document.getElementById('humidityChart').getContext('2d'), {
         type: 'line',
         data: {
-            labels: ['Umidade', 'Temperatura'],
+            labels: initial ? [new Date().toLocaleTimeString('pt-BR', { hour12: false })] : [],
             datasets: [{
-                label: 'Leituras',
-                data: [initial?.umidade ?? 65, initial?.temperatura ?? 24],
-                borderColor: '#27ae60',
-                backgroundColor: 'rgba(39, 174, 96, 0.12)',
+                label: 'Média de Umidade (%)',
+                data: initial ? [Number(initial.umidade_media ?? 0)] : [],
+                borderColor: '#0284c7',
+                backgroundColor: 'rgba(2, 132, 199, 0.04)',
                 tension: 0.35,
                 fill: true,
-                pointRadius: window.innerWidth < 768 ? 1 : 2
+                pointRadius: 3,
+                borderWidth: 2
             }]
         },
-        options: { 
-            responsive: true,
-            maintainAspectRatio: true,
-            animation: { duration: 800 },
-            plugins: {
-                legend: {
-                    labels: { font: { size: window.innerWidth < 768 ? 11 : 12 } }
-                }
-            },
-            scales: { 
-                x: { ticks: { font: { size: window.innerWidth < 768 ? 10 : 11 } } },
-                y: { ticks: { font: { size: window.innerWidth < 768 ? 10 : 11 } } }
-            }
-        }
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 } } }
     });
 
-    const ctxProfit = document.getElementById('profitChart').getContext('2d');
-    const profitChart = new Chart(ctxProfit, {
+    // 2. Barras Consolidadas
+    const profitChart = new Chart(document.getElementById('profitChart').getContext('2d'), {
         type: 'bar',
         data: {
-            labels: ['pH', 'Gás', 'Peso'],
+            labels: ['pH Médio', 'Gás Médio (ppm)', 'Peso Total (kg)'],
             datasets: [{
-                label: 'Indicadores',
-                data: [initial?.ph ?? 6.8, initial?.gas ?? 120, initial?.peso ?? 18],
-                backgroundColor: ['#1e5d3b', '#2ecc71', '#f1c40f']
+                label: 'Métricas Atuais',
+                data: [initial?.ph_medio ?? 0, initial?.gas_medio ?? 0, initial?.peso_total ?? 0],
+                backgroundColor: ['#475569', '#ea580c', '#16a34a'],
+                borderRadius: 8,
+                barThickness: 32
             }]
         },
-        options: { 
-            responsive: true,
-            maintainAspectRatio: true,
-            animation: { duration: 800 },
-            plugins: {
-                legend: {
-                    labels: { font: { size: window.innerWidth < 768 ? 11 : 12 } }
-                }
-            },
-            scales: { 
-                x: { ticks: { font: { size: window.innerWidth < 768 ? 10 : 11 } } },
-                y: { ticks: { font: { size: window.innerWidth < 768 ? 10 : 11 } } }
-            }
-        }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
     });
 
-    const qualityChart = new Chart(document.getElementById('qualityChart').getContext('2d'), {
-        type: 'doughnut',
+    // 3. Linha - Temperatura Média
+    const temperatureChart = new Chart(document.getElementById('temperatureChart').getContext('2d'), {
+        type: 'line',
         data: {
-            labels: ['Ideal', 'Atenção', 'Risco'],
+            labels: initial ? [new Date().toLocaleTimeString('pt-BR', { hour12: false })] : [],
             datasets: [{
-                data: [68, 22, 10],
-                backgroundColor: ['#27ae60', '#1e5d3b', '#f1c40f'],
-                borderWidth: 0
+                label: 'Média de Temperatura (°C)',
+                data: initial ? [Number(initial.temperatura_media ?? 0)] : [],
+                borderColor: '#ea580c',
+                backgroundColor: 'rgba(234, 88, 12, 0.04)',
+                tension: 0.35,
+                fill: true,
+                pointRadius: 3,
+                borderWidth: 2
             }]
         },
-        options: { 
-            responsive: true,
-            maintainAspectRatio: true,
-            cutout: '65%',
-            plugins: {
-                legend: {
-                    labels: { font: { size: window.innerWidth < 768 ? 11 : 12 } },
-                    position: window.innerWidth < 768 ? 'bottom' : 'right'
-                }
-            }
-        }
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 80 } } }
     });
 
-    const radarChart = new Chart(document.getElementById('radarChart').getContext('2d'), {
-        type: 'radar',
+    // 4. Linha - Infraestrutura / Latência
+    const networkChart = new Chart(document.getElementById('networkChart').getContext('2d'), {
+        type: 'line',
         data: {
-            labels: ['Umidade', 'Temperatura', 'Estabilidade', 'Eficiência', 'Qualidade'],
+            labels: initial ? [new Date().toLocaleTimeString('pt-BR', { hour12: false })] : [],
             datasets: [{
-                label: 'Performance',
-                data: [82, 74, 90, 76, 85],
-                backgroundColor: 'rgba(39, 174, 96, 0.16)',
-                borderColor: '#1e5d3b',
-                pointBackgroundColor: '#27ae60'
+                label: 'Resposta do Endpoint (ms)',
+                data: initial ? [20] : [],
+                borderColor: '#64748b',
+                backgroundColor: 'rgba(100, 116, 139, 0.04)',
+                tension: 0.2,
+                fill: true,
+                pointRadius: 2,
+                borderWidth: 1.5
             }]
         },
-        options: { 
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: {
-                    labels: { font: { size: window.innerWidth < 768 ? 10 : 12 } }
-                }
-            },
-            scales: { 
-                r: { 
-                    suggestedMin: 0, 
-                    suggestedMax: 100,
-                    ticks: { font: { size: window.innerWidth < 768 ? 9 : 11 } },
-                    pointLabels: { font: { size: window.innerWidth < 768 ? 10 : 12 } }
-                } 
-            } 
-        }
+        options: { responsive: true, maintainAspectRatio: false }
     });
 
-    function updateAdminCards(data) {
-        document.getElementById('admin-umidade').textContent = Number(data?.umidade ?? 0).toFixed(0);
-        document.getElementById('admin-temperatura').textContent = Number(data?.temperatura ?? 0).toFixed(1);
-        document.getElementById('admin-status').textContent = String(data?.status_contaminacao || 'nao_analisado').replace(/_/g, ' ');
-        humidityChart.data.datasets[0].data = [Number(data?.umidade ?? 0), Number(data?.temperatura ?? 0)];
-        humidityChart.update();
-        profitChart.data.datasets[0].data = [Number(data?.ph ?? 0), Number(data?.gas ?? 0), Number(data?.peso ?? 0)];
+    function updateAdminDashboard(data, latency = 20) {
+        if (!data || Object.keys(data).length === 0) return;
+
+        const umidade = Number(data?.umidade_media ?? 0);
+        const temperatura = Number(data?.temperatura_media ?? 0);
+        const ph = Number(data?.ph_medio ?? 0);
+        const gas = Number(data?.gas_medio ?? 0);
+        const peso = Number(data?.peso_total ?? 0);
+        const totalMaquinas = data?.total_maquinas ?? 0;
+
+        // Atualização Dinâmica dos Cards Estilizados
+        document.getElementById('admin-umidade').textContent = umidade.toFixed(0);
+        document.getElementById('admin-temperatura').textContent = temperatura.toFixed(1);
+        document.getElementById('admin-status').textContent = totalMaquinas;
+
+        // Atualização do gráfico de colunas
+        profitChart.data.datasets[0].data = [ph, gas, peso];
         profitChart.update();
-        qualityChart.data.datasets[0].data = [Math.max(10, 100 - (Number(data?.umidade ?? 0) / 2)), Math.max(5, (Number(data?.umidade ?? 0) / 3)), Math.max(2, 10 + ((Number(data?.gas ?? 0) / 60)))];
-        qualityChart.update();
+
+        // Push de dados nas linhas de tempo em tempo real
+        if (data.id !== ultimoIdInserido) {
+            ultimoIdInserido = data.id;
+
+            const agora = new Date();
+            const horaFormatada = agora.toLocaleTimeString('pt-BR', { hour12: false });
+
+            // Adiciona novos registros
+            humidityChart.data.labels.push(horaFormatada);
+            humidityChart.data.datasets[0].data.push(umidade);
+
+            temperatureChart.data.labels.push(horaFormatada);
+            temperatureChart.data.datasets[0].data.push(temperatura);
+
+            networkChart.data.labels.push(horaFormatada);
+            networkChart.data.datasets[0].data.push(latency);
+
+            // Mantém a janela deslizante de tamanho máximo histórico fixado em 20 pontos
+            if (humidityChart.data.labels.length > MAX_PONTOS_GRAFICO) {
+                humidityChart.data.labels.shift();
+                humidityChart.data.datasets[0].data.shift();
+
+                temperatureChart.data.labels.shift();
+                temperatureChart.data.datasets[0].data.shift();
+
+                networkChart.data.labels.shift();
+                networkChart.data.datasets[0].data.shift();
+            }
+
+            humidityChart.update();
+            temperatureChart.update();
+            networkChart.update();
+        }
     }
 
     function refreshAdminData() {
+        const startTime = performance.now();
+
         fetch('{{ route('arduino.latest') }}')
             .then(r => r.json())
-            .then(result => { if (result?.data) updateAdminCards(result.data); })
+            .then(result => { 
+                const endTime = performance.now();
+                const executionTime = Math.round(endTime - startTime);
+                
+                if (result?.data) {
+                    updateAdminDashboard(result.data, executionTime); 
+                }
+            })
             .catch(() => {});
     }
 
-    updateAdminCards(initial || {});
-    setInterval(refreshAdminData, 5000);
+    // Inicialização da tela com carga primária
+    updateAdminDashboard(initial || {});
+    setInterval(refreshAdminData, 1000);
 </script>
 @endsection

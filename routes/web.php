@@ -5,6 +5,10 @@ use App\Http\Controllers\WebsiteController;
 use App\Http\AdminController;
 use App\Http\Controllers\Api\LeituraController; 
 
+
+
+
+
 // routes/web.php
 
 Route::get('/', [WebsiteController::class, 'home'])->name('home');
@@ -15,7 +19,7 @@ Route::get('/login', [WebsiteController::class, 'loginForm'])->name('login');
 Route::post('/login', [WebsiteController::class, 'logar'])->name('login.post');
 Route::post('/logout', [WebsiteController::class, 'deslogar'])->name('logout');
 Route::get('/cadastro', [WebsiteController::class, 'cadastroForm'])->name('cadastro');
-Route::post('/cadastro', [WebsiteController::class, 'cadastrarCliente'])->name('cadastro.post');
+Route::post('/cadastro', [AdminController::class, 'salvarCliente'])->name('cadastro.post');
 Route::get('/cliente', [WebsiteController::class, 'homeCliente'])->name('cliente.home');
 Route::get('/cliente/configuracao', [WebsiteController::class, 'configuracaoCliente'])->name('cliente.configuracao');
 Route::post('/cliente/configuracao', [WebsiteController::class, 'atualizarConfiguracao'])->name('cliente.configuracao.salvar');
@@ -27,7 +31,7 @@ Route::get('/admin/clientes', [WebsiteController::class, 'adminClientes'])->name
 Route::get('/admin/vendas', [WebsiteController::class, 'adminVendas'])->name('admin.vendas');
 Route::get('/admin/historicos', [WebsiteController::class, 'adminHistoricos'])->name('admin.historicos');
 Route::get('/admin/rotas', [WebsiteController::class, 'adminRotas'])->name('admin.rotas');
-Route::get('/api/arduino/latest', [WebsiteController::class, 'arduinoLatest'])->name('arduino.latest');
+Route::get('/api/arduino/latest', [LeituraController::class, 'latest'])->name('arduino.latest');
 Route::post('/admin/clientes/salvar', [AdminController::class, 'salvarCliente'])->name('admin.clientes.salvar');
 Route::post('/admin/clientes/{id}/excluir', [AdminController::class, 'excluirCliente'])->name('admin.clientes.excluir');
 Route::get('/arduino/latest', [LeituraController::class, 'latest'])->name('arduino.latest');

@@ -3,8 +3,15 @@
 
 @section('styles')
 <style>
-    .chart-container canvas {
-        max-width: 100%;
+    /* Garante que o cálculo de tamanhos inclua paddings sem estourar limites */
+    *, ::after, ::before {
+        box-sizing: border-box;
+    }
+
+    .chart-wrapper {
+        position: relative;
+        width: 100%;
+        height: 300px; /* Altura padrão bem definida para o Chart.js respirar */
     }
     
     @media (max-width: 768px) {
@@ -12,8 +19,20 @@
             padding: 1rem !important;
             margin-bottom: 1.5rem;
         }
-        .projects-container {
+        /* Força o empilhamento correto e evita o esmagamento lateral */
+        .metrics-grid {
+            grid-template-columns: 1fr !important;
             gap: 1rem !important;
+            width: 100% !important;
+        }
+        .projects-container {
+            gap: 1.2rem !important;
+            width: 100% !important;
+            padding: 0 !important;
+        }
+        .charts-responsive-grid {
+            grid-template-columns: 1fr !important;
+            width: 100% !important;
         }
         .metric-card .metric-value {
             font-size: 1.8rem !important;
@@ -22,12 +41,20 @@
             flex-direction: column;
             gap: 1rem;
         }
+        /* Reduz ligeiramente a altura no mobile para evitar cortes verticais */
+        .chart-wrapper {
+            height: 240px;
+        }
+        /* Remove paddings excessivos do card nativo que empurram o gráfico para fora */
+        .ccard {
+            padding: 1rem !important;
+        }
     }
 </style>
 @endsection
 
 @section('content')
-<section id="dashboard" class="dashboard-hero">
+<section id="dashboard" class="dashboard-hero" style="max-width: 100%; overflow-x: hidden;">
     <div class="dash-top">
         <div>
             <h2>Painel do Cliente</h2>
@@ -54,40 +81,44 @@
         </article>
     </div>
 
-    <div class="projects-container" id="graficos">
-        <article class="project-item full-width-card">
-            <div class="chart-container full-chart-card">
-                <span class="tag">Umidade em tempo real</span>
-                <h3>Variação da umidade do solo (atualização a cada segundo)</h3>
-                <p id="deviceWarning" class="device-warning">Nenhum dispositivo Arduino encontrado no banco. Conecte um sensor para ver a leitura em tempo real.</p>
-                <canvas id="liveHumidityChart"></canvas>
-            </div>
-        </article>
-        <article class="project-item">
-            <div class="chart-container full-chart-card">
-                <span class="tag">Indicadores</span>
-                <h3>pH, Gás e Peso</h3>
-                <div class="indicator-grid">
-                    <div class="indicator-card"><span class="indicator-label">pH</span><strong id="info-ph">--</strong><small>Neutralidade do composto</small><div class="indicator-bar"><i id="bar-ph"></i></div></div>
-                    <div class="indicator-card"><span class="indicator-label">Gás</span><strong id="info-gas">--</strong><small>Concentração detectada</small><div class="indicator-bar"><i id="bar-gas"></i></div></div>
-                    <div class="indicator-card"><span class="indicator-label">Peso</span><strong id="info-peso">--</strong><small>Material em processo</small><div class="indicator-bar"><i id="bar-peso"></i></div></div>
+    <div class="projects-container" id="graficos" style="display: flex; flex-direction: column; gap: 1.5rem; width: 100%;">
+        
+        <article class="project-item full-width-card" style="width: 100%;">
+            <div class="ccard" style="display: flex; flex-direction: column; padding: 1.5rem; background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); width: 100%;">
+                <span class="tag" style="align-self: flex-start; margin-bottom: 0.5rem;">Umidade em tempo real</span>
+                <h3 style="margin-bottom: 0.25rem;">Variação da umidade do solo</h3>
+                <p id="deviceWarning" class="device-warning" style="color: #e74c3c; font-size: 0.9rem; margin-bottom: 1rem;">Nenhum dispositivo Arduino encontrado no banco. Conecte um sensor para ver a leitura em tempo real.</p>
+                <div class="chart-wrapper">
+                    <canvas id="liveHumidityChart"></canvas>
                 </div>
             </div>
         </article>
-        <article class="project-item">
-            <div class="chart-container">
-                <span class="tag">Resumo</span>
-                <h3>Distribuição da Qualidade do Sistema</h3>
-                <canvas id="qualityChart"></canvas>
-            </div>
-        </article>
-        <article class="project-item">
-            <div class="chart-container">
-                <span class="tag">Eficiência</span>
-                <h3>Risco, Eficiência e Estabilidade</h3>
-                <canvas id="radarChart"></canvas>
-            </div>
-        </article>
+
+        <div class="charts-responsive-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; width: 100%;">
+            
+            <article class="project-item">
+                <div class="chart-container full-chart-card" style="min-height: 340px; display: flex; flex-direction: column; justify-content: center; width: 100%;">
+                    <span class="tag">Indicadores</span>
+                    <h3>pH, Gás e Peso</h3>
+                    <div class="indicator-grid" style="margin-top: 1rem;">
+                        <div class="indicator-card"><span class="indicator-label">pH</span><strong id="info-ph">--</strong><small>Neutralidade do composto</small><div class="indicator-bar"><i id="bar-ph"></i></div></div>
+                        <div class="indicator-card"><span class="indicator-label">Gás</span><strong id="info-gas">--</strong><small>Concentração detectada</small><div class="indicator-bar"><i id="bar-gas"></i></div></div>
+                        <div class="indicator-card"><span class="indicator-label">Peso</span><strong id="info-peso">--</strong><small>Material em processo</small><div class="indicator-bar"><i id="bar-peso"></i></div></div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="project-item">
+                <div class="ccard" style="display: flex; flex-direction: column; padding: 1.5rem; background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); width: 100%;">
+                    <span class="tag" style="align-self: flex-start; margin-bottom: 0.5rem;">Temperatura Real</span>
+                    <h3 style="margin-bottom: 1rem;">Histórico Térmico do Composto (°C)</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="liveTemperatureChart"></canvas>
+                    </div>
+                </div>
+            </article>
+
+        </div>
     </div>
 </section>
 @endsection
@@ -95,109 +126,68 @@
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Recupera a leitura inicial enviada pelo Controller PHP (se houver)
     const initial = @json($latest ?? null);
+    const MAX_PONTOS_GRAFICO = 20; 
+    let ultimoIdInserido = null;
 
-    // 1. Gráfico de Linha (Umidade em Tempo Real)
+    Chart.defaults.set('plugins.legend', {
+        labels: { font: { family: "'Inter', sans-serif", size: 12 } }
+    });
+
+    // Configuração com resize e re-renderização nativa ativa para as curvas
     const liveHumidityChart = new Chart(document.getElementById('liveHumidityChart').getContext('2d'), {
         type: 'line',
         data: {
-            // Inicia com marcações vazias que serão substituídas pelos horários reais (HH:MM:SS)
-            labels: ['--', '--', '--', '--', '--'],
+            labels: initial ? [new Date().toLocaleTimeString('pt-BR', { hour12: false })] : [],
             datasets: [{
                 label: 'Umidade (%)',
-                data: [initial?.umidade ?? 0, initial?.umidade ?? 0, initial?.umidade ?? 0, initial?.umidade ?? 0, initial?.umidade ?? 0],
+                data: initial ? [Number(initial.umidade)] : [],
                 borderColor: '#296d7e',
-                backgroundColor: 'rgba(24, 206, 100, 0.14)',
+                backgroundColor: 'rgba(41, 109, 126, 0.08)',
                 tension: 0.35,
                 fill: true,
-                pointRadius: window.innerWidth < 768 ? 1 : 2
+                pointRadius: 3
             }]
         },
         options: { 
             responsive: true,
-            maintainAspectRatio: true,
-            animation: { duration: 300 }, 
-            plugins: {
-                legend: {
-                    labels: { font: { size: window.innerWidth < 768 ? 11 : 12 } }
-                }
-            },
+            maintainAspectRatio: false,
+            resizeDelay: 100, // Dá uma fração de segundo para estabilizar o tamanho da tela
             scales: { 
-                y: { beginAtZero: false, suggestedMin: 0, suggestedMax: 100 },
-                x: { ticks: { font: { size: window.innerWidth < 768 ? 10 : 11 } } }
+                y: { beginAtZero: true, min: 0, max: 100, grid: { color: 'rgba(0,0,0,0.03)' } },
+                x: { grid: { display: false } }
             } 
         }
     });
 
-    // 2. Gráfico de Rosca (Distribuição da Qualidade)
-    const qualityChart = new Chart(document.getElementById('qualityChart').getContext('2d'), {
-        type: 'doughnut',
+    const liveTemperatureChart = new Chart(document.getElementById('liveTemperatureChart').getContext('2d'), {
+        type: 'line',
         data: {
-            labels: ['Ideal', 'Atenção', 'Risco', 'Sem análise'],
+            labels: initial ? [new Date().toLocaleTimeString('pt-BR', { hour12: false })] : [],
             datasets: [{
-                data: [0, 0, 0, 100],
-                backgroundColor: ['#27ae60', '#1e5d3b', '#f1c40f', '#ccc'],
-                borderWidth: 0.5,
-                borderColor: '#fff'
+                label: 'Temperatura (°C)',
+                data: initial ? [Number(initial.temperatura)] : [],
+                borderColor: '#e67e22',
+                backgroundColor: 'rgba(230, 126, 34, 0.08)',
+                tension: 0.35,
+                fill: true,
+                pointRadius: 3
             }]
         },
         options: { 
             responsive: true,
-            maintainAspectRatio: true,
-            cutout: '67%',
-            plugins: {
-                legend: {
-                    labels: { font: { size: window.innerWidth < 768 ? 11 : 12 } },
-                    position: window.innerWidth < 768 ? 'bottom' : 'right'
-                }
-            }
-        }
-    });
-
-    // 3. Gráfico Radar (Performance Geral)
-    const radarChart = new Chart(document.getElementById('radarChart').getContext('2d'), {
-        type: 'radar',
-        data: {
-            labels: ['Umidade', 'Temperatura', 'Estabilidade', 'Eficiência', 'Qualidade'],
-            datasets: [{
-                label: 'Performance',
-                data: [0, 0, 0, 0, 0],
-                backgroundColor: 'rgba(39, 174, 96, 0.16)',
-                borderColor: '#1e5d3b',
-                pointBackgroundColor: '#27ae60'
-            }]
-        },
-        options: { 
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: {
-                    labels: { font: { size: window.innerWidth < 768 ? 10 : 12 } }
-                }
-            },
+            maintainAspectRatio: false,
+            resizeDelay: 100,
             scales: { 
-                r: { 
-                    suggestedMin: 0, 
-                    suggestedMax: 100,
-                    ticks: { font: { size: window.innerWidth < 768 ? 9 : 11 } },
-                    pointLabels: { font: { size: window.innerWidth < 768 ? 10 : 12 } }
-                } 
+                y: { beginAtZero: true, min: 0, max: 80, grid: { color: 'rgba(0,0,0,0.03)' } },
+                x: { grid: { display: false } }
             } 
         }
     });
 
     const deviceWarning = document.getElementById('deviceWarning');
 
-    // Função que atualiza todos os componentes visuais da tela com os novos dados
     function updateDashboard(data) {
-        const umidade = Number(data?.umidade ?? 0);
-        const temperatura = Number(data?.temperatura ?? 0);
-        const peso = Number(data?.peso ?? 0);
-        const ph = Number(data?.ph ?? 0);
-        const gas = Number(data?.gas ?? 0);
-
-        // Se não houver dados válidos vindos do banco
         if (!data || Object.keys(data).length === 0) {
             deviceWarning.style.display = 'block';
             document.getElementById('val-umidade').textContent = '0%';
@@ -207,15 +197,19 @@
             return;
         }
 
+        const umidade = Number(data?.umidade ?? 0);
+        const temperatura = Number(data?.temperatura ?? 0);
+        const peso = Number(data?.peso ?? 0);
+        const ph = Number(data?.ph ?? 0);
+        const gas = Number(data?.gas ?? 0);
+
         deviceWarning.style.display = 'none';
 
-        // Atualiza os Cards Principais (Texto)
         document.getElementById('val-umidade').textContent = `${umidade.toFixed(0)}%`;
         document.getElementById('val-temperatura').textContent = `${temperatura.toFixed(1)}°C`;
         document.getElementById('val-peso').textContent = `${peso.toFixed(1)} kg`;
         document.getElementById('status-text').textContent = (data?.status_contaminacao || 'nao_analisado').replace(/_/g, ' ');
 
-        // Atualiza os Indicadores de Barra Secundários
         document.getElementById('info-ph').textContent = ph.toFixed(1);
         document.getElementById('info-gas').textContent = `${gas.toFixed(0)} ppm`;
         document.getElementById('info-peso').textContent = `${peso.toFixed(1)} kg`;
@@ -223,54 +217,41 @@
         document.getElementById('bar-gas').style.width = `${Math.min(100, gas / 2.5)}%`;
         document.getElementById('bar-peso').style.width = `${Math.min(100, peso * 5)}%`;
 
-        // === Atualização Dinâmica do Gráfico de Linha ===
-        const liveValues = liveHumidityChart.data.datasets[0].data;
-        liveValues.shift(); // Remove o valor mais antigo do array
-        liveValues.push(Number.isFinite(umidade) ? umidade : 0); // Adiciona a nova umidade ao final
+        if (data.id !== ultimoIdInserido) {
+            ultimoIdInserido = data.id;
 
-        // Captura a hora atual do computador do cliente para a legenda
-        const agora = new Date();
-        const horaFormatada = agora.toLocaleTimeString('pt-BR', { hour12: false });
-        
-        liveHumidityChart.data.labels.shift(); // Remove a legenda de tempo antiga
-        liveHumidityChart.data.labels.push(horaFormatada); // Adiciona o novo horário
-        
-        liveHumidityChart.update(); // Re-renderiza o gráfico na tela
-        
-        // === Atualização do Gráfico de Pizza ===
-        qualityChart.data.datasets[0].data = [
-            Math.max(10, 100 - umidade / 2), 
-            Math.max(5, umidade / 3), 
-            Math.max(2, 10 + (gas / 60)),
-            0 // Remove a barra "sem análise" já que temos dados reais
-        ];
-        qualityChart.update();
+            const agora = new Date();
+            const horaFormatada = agora.toLocaleTimeString('pt-BR', { hour12: false });
 
-        // === Atualização Opcional do Gráfico Radar ===
-        // Ajusta os eixos baseado nos valores calculados da compostagem
-        radarChart.data.datasets[0].data = [umidade, temperatura * 2, 75, 80, 90]; 
-        radarChart.update();
+            liveHumidityChart.data.labels.push(horaFormatada);
+            liveHumidityChart.data.datasets[0].data.push(umidade);
+
+            liveTemperatureChart.data.labels.push(horaFormatada);
+            liveTemperatureChart.data.datasets[0].data.push(temperatura);
+
+            if (liveHumidityChart.data.labels.length > MAX_PONTOS_GRAFICO) {
+                liveHumidityChart.data.labels.shift();
+                liveHumidityChart.data.datasets[0].data.shift();
+                
+                liveTemperatureChart.data.labels.shift();
+                liveTemperatureChart.data.datasets[0].data.shift();
+            }
+
+            liveHumidityChart.update();
+            liveTemperatureChart.update();
+        }
     }
 
-    // Função que faz o "Fetch" assíncrono na rota do Laravel para obter o último registro
     function refreshData() {
         fetch('{{ route('arduino.latest') }}')
             .then(r => r.json())
             .then(result => {
-                // Se a API retornar um objeto válido em "data", repassa para a atualização
-                if (result?.data) {
-                    updateDashboard(result.data);
-                }
+                if (result?.data) updateDashboard(result.data);
             })
-            .catch(() => {
-                console.log('Erro ao buscar dados do sensor.');
-            });
+            .catch(() => {});
     }
 
-    // Carrega o estado inicial ao abrir a página
     updateDashboard(initial || {});
-    
-    // Define o temporizador para rodar a função refreshData a cada 1000ms (1 segundo)
     setInterval(refreshData, 1000);
 </script>
 @endsection

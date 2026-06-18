@@ -1,0 +1,357 @@
+:root {
+    /* Tons Escuros para o Background e Componentes */
+    --bg-body: #0d1117;          /* Fundo geral super escuro */
+    --bg-card: #161b22;          /* Fundo dos cards e seções */
+    --bg-sidebar: #0b0e14;       /* Lateral ainda mais escura */
+    
+    /* Paleta Verde EcoCycle Adaptada */
+    --primary-color: #1e5d3b;    /* Verde floresta fechado */
+    --secondary-color: #2e7d32;  /* Verde intermediário */
+    --accent-color: #2ecc71;     /* Verde elétrico para detalhes vivos */
+    
+    /* Toque Dourado Premium */
+    --gold-color: #d4af37;       /* Dourado metálico */
+    --gold-hover: #f3e5ab;       /* Dourado claro suave */
+    
+    /* Tipografia para Modo Escuro */
+    --text-main: #e6edf3;        /* Branco acinzentado de alta leitura */
+    --text-muted: #8b949e;       /* Cinza fosco para subtextos */
+    --white: #ffffff;
+    
+    /* Sombras e Transições */
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    color: var(--text-main);
+    background-color: var(--bg-body);
+}
+
+/* --- HEADER / TOPBAR ADMIN --- */
+header.topbar {
+    background: linear-gradient(135deg, var(--bg-sidebar) 0%, var(--primary-color) 100%);
+    color: var(--white);
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--gold-color); /* Linha dourada divisória */
+    box-shadow: var(--shadow);
+}
+
+.topbar-brand {
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+.topbar-brand em {
+    color: var(--gold-color);
+    font-style: normal;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    margin-left: 5px;
+    border: 1px solid var(--gold-color);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.topbar-user {
+    font-weight: 600;
+    color: var(--gold-color);
+}
+
+/* --- SIDEBAR LATERAL --- */
+.sidebar {
+    background-color: var(--bg-sidebar);
+    border-right: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.sidebar-head {
+    padding: 2rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-logo {
+    color: var(--white);
+    font-weight: 800;
+}
+
+.sidebar-logo span {
+    color: var(--gold-color);
+}
+
+.sidebar-logo small {
+    color: var(--text-muted);
+}
+
+/* Perfil do Administrador */
+.sidebar-profile {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 1.5rem;
+    background: rgba(30, 93, 59, 0.2);
+    margin: 1rem;
+    border-radius: 12px;
+    border: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+.avatar.admin {
+    background: linear-gradient(135deg, var(--gold-color) 0%, #aa7c11 100%);
+    color: var(--bg-sidebar);
+    font-weight: 800;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+}
+
+.profile-name {
+    color: var(--text-main);
+    font-weight: 700;
+}
+
+.profile-role {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+/* Links de Navegação do Painel */
+.sidebar-nav {
+    padding: 1rem;
+}
+
+.nav-group {
+    color: var(--gold-color);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
+    padding-left: 0.5rem;
+}
+
+.nav-link {
+    display: block;
+    color: var(--text-muted);
+    text-decoration: none;
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+    transition: var(--transition);
+}
+
+.nav-link:hover {
+    background-color: rgba(46, 204, 113, 0.1);
+    color: var(--accent-color);
+}
+
+/* Link Ativo */
+.nav-link.active {
+    background: linear-gradient(90deg, var(--primary-color) 0%, rgba(212, 175, 55, 0.1) 100%);
+    color: var(--white);
+    border-left: 4px solid var(--gold-color); /* Indicador dourado */
+}
+
+/* Botão de Logout */
+.nav-link.logout button {
+    color: #ff6b6b;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    padding: 0.8rem 1rem;
+    transition: var(--transition);
+}
+
+.nav-link.logout button:hover {
+    background-color: rgba(255, 107, 107, 0.1);
+    color: #ff8787;
+    border-radius: 8px;
+}
+
+/* --- CORPO PRINCIPAL DO PAINEL (MAIN) --- */
+main.main {
+    max-width: 100%;
+    margin: 0;
+    padding: 2rem;
+}
+
+section {
+    background: var(--bg-card);
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Títulos das Seções Internas */
+section h2, article h2 {
+    font-size: 1.8rem;
+    color: var(--white);
+    margin-bottom: 1.5rem;
+}
+
+section h2::after, article h2::after {
+    content: "";
+    display: block;
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--gold-color), var(--accent-color));
+    margin-top: 8px;
+    border-radius: 4px;
+}
+
+/* Mensagens de Alerta / Flash Cards */
+.flash {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+.flash-ok {
+    background-color: rgba(46, 204, 113, 0.15);
+    color: var(--accent-color);
+    border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+.flash-err {
+    background-color: rgba(255, 107, 107, 0.15);
+    color: #ff6b6b;
+    border: 1px solid rgba(255, 107, 107, 0.3);
+}
+
+/* --- ADAPTAÇÕES ADICIONAIS PARA ELEMENTOS INTERNOS --- */
+input, select, textarea {
+    background-color: var(--bg-body) !important;
+    color: var(--text-main) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 6px;
+    padding: 10px;
+}
+
+input:focus, select:focus {
+    border-color: var(--gold-color) !important;
+    outline: none;
+    box-shadow: 0 0 5px rgba(212, 175, 55, 0.3);
+}
+
+/* Tabelas se houver */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--text-main);
+}
+
+th {
+    background-color: var(--bg-body);
+    color: var(--gold-color);
+    text-align: left;
+    padding: 12px;
+}
+
+td {
+    padding: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+tr:hover td {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+
+/* ==========================================================================
+   PADRÕES DE TELA DO CLIENTE APLICADOS AO TEMA ESCURO DO ADMIN 
+   ========================================================================== */
+
+/* Cards de Métricas Superiores */
+.metric-card {
+    background-color: var(--bg-body) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.metric-label {
+    color: var(--text-muted) !important;
+    font-weight: 600;
+}
+
+.metric-value {
+    color: var(--white) !important;
+}
+
+.metric-card p {
+    color: var(--text-muted) !important;
+}
+
+/* Containers dos Gráficos Internos */
+.chart-container {
+    background-color: var(--bg-body) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.chart-container h3 {
+    color: var(--white) !important;
+}
+
+.chart-container .tag {
+    background-color: rgba(46, 204, 113, 0.12) !important;
+    color: var(--accent-color) !important;
+    font-weight: 600;
+}
+
+/* Mini Indicadores de Barra Secundários */
+.indicator-card {
+    background: transparent !important;
+}
+
+.indicator-label {
+    color: var(--text-muted) !important;
+}
+
+.indicator-card strong {
+    color: var(--white) !important;
+}
+
+.indicator-card small {
+    color: var(--text-muted) !important;
+}
+
+.indicator-bar {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.indicator-bar i {
+    background: var(--accent-color) !important;
+}
+
+/* Alertas de Dispositivo */
+.device-warning {
+    color: var(--gold-color) !important;
+    background-color: rgba(214, 175, 55, 0.1) !important;
+    border: 1px solid rgba(214, 175, 55, 0.2) !important;
+    padding: 0.8rem;
+    border-radius: 6px;
+}

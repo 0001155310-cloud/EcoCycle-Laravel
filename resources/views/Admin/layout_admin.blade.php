@@ -39,7 +39,7 @@
         </div>
         <nav class="sidebar-nav">
             <div class="nav-group">Operação</div>
-            <a class="nav-link active" href="{{ route('admin.home') }}"> Dashboard</a>
+            <a class="nav-link active" href="{{ route('admin.home') }}"> Monitoramento</a>
             <a class="nav-link" href="{{ route('admin.vendas') }}"> Vendas</a>
             <a class="nav-link" href="{{ route('admin.clientes') }}"> Clientes</a>
             <a class="nav-link" href="{{ route('admin.historicos') }}"> Histórico</a>

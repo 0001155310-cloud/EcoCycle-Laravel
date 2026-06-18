@@ -1,0 +1,522 @@
+/* ==========================================================================
+   VARIÁVEIS E CONFIGURAÇÕES GERAIS (MODO ESCURO PREMIUM)
+   ========================================================================== */
+:root {
+    /* Tons Escuros para o Background e Componentes */
+    --bg-body: #0d1117;          /* Fundo geral super escuro */
+    --bg-card: #161b22;          /* Fundo dos cards e seções */
+    --bg-sidebar: #0b0e14;       /* Lateral ainda mais escura */
+    
+    /* Paleta Verde EcoCycle Adaptada */
+    --primary-color: #1e5d3b;    /* Verde floresta fechado */
+    --secondary-color: #2e7d32;  /* Verde intermediário */
+    --accent-color: #2ecc71;     /* Verde elétrico para detalhes vivos */
+    
+    /* Toque Dourado Premium */
+    --gold-color: #d4af37;       /* Dourado metálico */
+    --gold-hover: #f3e5ab;       /* Dourado claro suave */
+    
+    /* Tipografia para Modo Escuro */
+    --text-main: #e6edf3;        /* Branco acinzentado de alta leitura */
+    --text-muted: #8b949e;       /* Cinza fosco para subtextos */
+    --white: #ffffff;
+    
+    /* Sombras e Transições */
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    color: var(--text-main);
+    background-color: var(--bg-body);
+}
+
+/* ==========================================================================
+   ESTRUTURA DO LAYOUT (HEADER, SIDEBAR E MAIN)
+   ========================================================================== */
+
+/* --- HEADER / TOPBAR ADMIN --- */
+header.topbar {
+    background: linear-gradient(135deg, var(--bg-sidebar) 0%, var(--primary-color) 100%);
+    color: var(--white);
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--gold-color);
+    box-shadow: var(--shadow);
+}
+
+.topbar-brand {
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+.topbar-brand em {
+    color: var(--gold-color);
+    font-style: normal;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    margin-left: 5px;
+    border: 1px solid var(--gold-color);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.topbar-user {
+    font-weight: 600;
+    color: var(--gold-color);
+}
+
+/* --- SIDEBAR LATERAL --- */
+.sidebar {
+    background-color: var(--bg-sidebar);
+    border-right: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.sidebar-head {
+    padding: 2rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-logo {
+    color: var(--white);
+    font-weight: 800;
+}
+
+.sidebar-logo span {
+    color: var(--gold-color);
+}
+
+.sidebar-logo small {
+    color: var(--text-muted);
+}
+
+/* Perfil do Administrador */
+.sidebar-profile {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 1.5rem;
+    background: rgba(30, 93, 59, 0.2);
+    margin: 1rem;
+    border-radius: 12px;
+    border: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+.avatar.admin {
+    background: linear-gradient(135deg, var(--gold-color) 0%, #aa7c11 100%);
+    color: var(--bg-sidebar);
+    font-weight: 800;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+}
+
+.profile-name {
+    color: var(--text-main);
+    font-weight: 700;
+}
+
+.profile-role {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+/* Links de Navegação do Painel */
+.sidebar-nav {
+    padding: 1rem;
+}
+
+.nav-group {
+    color: var(--gold-color);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
+    padding-left: 0.5rem;
+}
+
+.nav-link {
+    display: block;
+    color: var(--text-muted);
+    text-decoration: none;
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+    transition: var(--transition);
+}
+
+.nav-link:hover {
+    background-color: rgba(46, 204, 113, 0.1);
+    color: var(--accent-color);
+}
+
+.nav-link.active {
+    background: linear-gradient(90deg, var(--primary-color) 0%, rgba(212, 175, 55, 0.1) 100%);
+    color: var(--white);
+    border-left: 4px solid var(--gold-color);
+}
+
+/* Botão de Logout */
+.nav-link.logout button {
+    color: #ff6b6b;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    padding: 0.8rem 1rem;
+    transition: var(--transition);
+    width: 100%;
+    text-align: left;
+}
+
+.nav-link.logout button:hover {
+    background-color: rgba(255, 107, 107, 0.1);
+    color: #ff8787;
+    border-radius: 8px;
+}
+
+/* --- CORPO PRINCIPAL DO PAINEL (MAIN) --- */
+main.main {
+    max-width: 100%;
+    margin: 0;
+    padding: 2rem;
+}
+
+section {
+    background: var(--bg-card);
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+section h2, article h2 {
+    font-size: 1.8rem;
+    color: var(--white);
+    margin-bottom: 1.5rem;
+}
+
+section h2::after, article h2::after {
+    content: "";
+    display: block;
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--gold-color), var(--accent-color));
+    margin-top: 8px;
+    border-radius: 4px;
+}
+
+/* Mensagens de Alerta / Flash Cards */
+.flash {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+.flash-ok {
+    background-color: rgba(46, 204, 113, 0.15);
+    color: var(--accent-color);
+    border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+.flash-err {
+    background-color: rgba(255, 107, 107, 0.15);
+    color: #ff6b6b;
+    border: 1px solid rgba(255, 107, 107, 0.3);
+}
+
+/* ==========================================================================
+   COMPONENTES INTERNOS DA HOME ADMIN (DASHBOARD ARDUINO)
+   ========================================================================== */
+
+/* --- CABEÇALHO DO DASHBOARD --- */
+.dash-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dash-top h2 {
+    color: var(--white);
+    font-size: 1.8rem;
+    margin-bottom: 0.3rem;
+}
+
+.dash-top p {
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* Pill de Conexão Live */
+.live-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(46, 204, 113, 0.1);
+    border: 1px solid rgba(46, 204, 113, 0.2);
+    color: var(--accent-color);
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.live-dot {
+    width: 8px;
+    height: 8px;
+    background-color: var(--accent-color);
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 8px var(--accent-color);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.9); opacity: 0.6; }
+    50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 12px var(--accent-color); }
+    100% { transform: scale(0.9); opacity: 0.6; }
+}
+
+/* --- GRID DE MÈTRICAS COMPATÍVEL COM HOME_CLIENTE --- */
+.dashboard-hero {
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
+    border: none;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-bottom: 3rem;
+}
+
+/* Estilização Visual do .metric-card no Modo Escuro */
+.metric-card {
+    background: var(--bg-card);
+    padding: 1.8rem;
+    border-radius: 20px;
+    border: 1px solid rgba(212, 175, 55, 0.1);
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.metric-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--gold-color);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+}
+
+.metric-label {
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    color: var(--gold-color) !important;
+}
+
+.metric-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin: 0.6rem 0;
+    color: var(--text-main) !important;
+    font-family: 'Inter', sans-serif;
+}
+
+.metric-card p {
+    margin: 0;
+    color: var(--text-muted) !important;
+    font-size: 0.9rem;
+}
+
+/* --- GRÁFICOS (CHART CONTAINERS COMPATÍVEIS) --- */
+.projects-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(48%, 1fr));
+    gap: 24px;
+    margin-top: 1rem;
+}
+
+.chart-container {
+    padding: 2rem;
+    width: 100%;
+    background: var(--bg-card);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    box-shadow: var(--shadow);
+    position: relative;
+}
+
+.chart-container h3 {
+    color: var(--white);
+    font-size: 1.25rem;
+    margin-top: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.chart-container .tag {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+    color: var(--gold-color);
+    background: rgba(212, 175, 55, 0.1);
+    padding: 3px 8px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.chart-container canvas {
+    max-width: 100%;
+}
+
+/* Alinhamento dos sub-cards internos de indicadores (pH, Gás, Peso) */
+.indicator-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    margin-top: 1rem;
+}
+
+.indicator-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.indicator-label {
+    font-size: 0.8rem;
+    color: var(--gold-color);
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.indicator-card strong {
+    font-size: 1.5rem;
+    color: var(--text-main);
+}
+
+.indicator-card small {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.indicator-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.07);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    margin-top: 0.2rem;
+}
+
+.indicator-bar i {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    background: linear-gradient(90deg, var(--secondary-color), var(--accent-color));
+    border-radius: 10px;
+}
+
+.device-warning {
+    color: #ff6b6b;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+/* --- ENTRADAS DE DADOS E TABELAS INTERNAS --- */
+input, select, textarea {
+    background-color: var(--bg-body) !important;
+    color: var(--text-main) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 6px;
+    padding: 10px;
+}
+
+input:focus, select:focus {
+    border-color: var(--gold-color) !important;
+    outline: none;
+    box-shadow: 0 0 5px rgba(212, 175, 55, 0.3);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--text-main);
+}
+
+th {
+    background-color: var(--bg-body);
+    color: var(--gold-color);
+    text-align: left;
+    padding: 12px;
+}
+
+td {
+    padding: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+tr:hover td {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* ==========================================================================
+   RESPONSIVIDADE MEDIA QUERIES
+   ========================================================================== */
+@media (max-width: 992px) {
+    .projects-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .dash-top {
+        flex-direction: column;
+        align-items: start;
+    }
+    .chart-container {
+        padding: 1.2rem;
+    }
+    .metric-value {
+        font-size: 2rem !important;
+    }
+    .metrics-grid {
+        grid-template-columns: 1fr !important;
+    }
+    .indicator-grid {
+        gap: 1rem;
+    }
+}
