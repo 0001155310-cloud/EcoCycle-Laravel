@@ -63,7 +63,7 @@
         </section>
     </main>
 
-    <script src="/assets/js/script.js"></script>
+    <script src=""></script>
     @yield('scripts')
 </body>
 </html>  
