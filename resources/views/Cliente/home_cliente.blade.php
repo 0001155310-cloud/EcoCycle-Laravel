@@ -15,6 +15,12 @@
     }
     
     @media (max-width: 768px) {
+        .dashboard-hero {
+            gap: 0.85rem !important;
+        }
+        .dash-top {
+            margin-bottom: 1rem !important;
+        }
         .chart-container {
             padding: 1rem !important;
             margin-bottom: 1.5rem;
@@ -25,6 +31,12 @@
             gap: 1rem !important;
             width: 100% !important;
         }
+        .metrics-grid > article,
+        .charts-responsive-grid > article,
+        .project-item {
+            min-width: 0 !important;
+            width: 100% !important;
+        }
         .projects-container {
             gap: 1.2rem !important;
             width: 100% !important;
@@ -32,18 +44,38 @@
         }
         .charts-responsive-grid {
             grid-template-columns: 1fr !important;
+            gap: 1rem !important;
             width: 100% !important;
+        }
+        .chart-container,
+        .ccard {
+            width: 100% !important;
+            min-width: 0 !important;
+            padding: 1rem !important;
         }
         .metric-card .metric-value {
             font-size: 1.8rem !important;
         }
         .indicator-grid {
-            flex-direction: column;
-            gap: 1rem;
+            grid-template-columns: 1fr !important;
+            gap: 0.75rem !important;
+        }
+        .indicator-card {
+            padding: 0.85rem !important;
+        }
+        .indicator-card strong {
+            font-size: 1.35rem !important;
         }
         /* Reduz ligeiramente a altura no mobile para evitar cortes verticais */
         .chart-wrapper {
-            height: 240px;
+            height: 200px;
+        }
+        .full-chart-card {
+            min-height: 0 !important;
+        }
+        .full-chart-card canvas {
+            height: 220px !important;
+            max-height: 220px !important;
         }
         /* Remove paddings excessivos do card nativo que empurram o gráfico para fora */
         .ccard {
@@ -54,7 +86,7 @@
 @endsection
 
 @section('content')
-<section id="dashboard" class="dashboard-hero" style="max-width: 100%; overflow-x: hidden;">
+<section id="dashboard" class="dashboard-hero" style="max-width: 100%; width: 100%; padding: 1.5rem; background-color: #f8fafc; overflow-x: hidden; box-sizing: border-box;">
     <div class="dash-top">
         <div>
             <h2>Painel do Cliente</h2>
@@ -63,7 +95,7 @@
         <span class="live-pill"><span class="live-dot"></span>Atualização automática a cada segundo</span>
     </div>
 
-    <div class="metrics-grid">
+    <div class="metrics-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; width: 100%;">
         <article class="metric-card">
             <div class="metric-label">Umidade do Solo</div>
             <div class="metric-value" id="val-umidade">--</div>
@@ -94,7 +126,7 @@
             </div>
         </article>
 
-        <div class="charts-responsive-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; width: 100%;">
+        <div class="charts-responsive-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; width: 100%;">
             
             <article class="project-item">
                 <div class="chart-container full-chart-card" style="min-height: 340px; display: flex; flex-direction: column; justify-content: center; width: 100%;">
