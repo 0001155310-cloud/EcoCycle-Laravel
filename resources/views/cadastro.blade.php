@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro - EcoCycle</title>
-    <link rel="stylesheet" href="assets/css/login.css">
+    <link rel="stylesheet" href="/assets/css/login.css">
 </head>
 <body>
     <div class="video-page">
         <div class="video-bg">
             <video autoplay muted loop playsinline id="bg-video">
-                <source src="{{ asset('assets/img/background.mp4') }}" type="video/mp4">
+                <source src="{{ asset('/assets/img/background.mp4') }}" type="video/mp4">
             </video>
         </div>
 

@@ -6,7 +6,7 @@
     <title>Login - EcoCycle</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('assets/css/login.css') }}">
+    <link rel="stylesheet" href="/assets/css/login.css">
     
     <style>
         /* Estilização rápida para o checkbox ficar alinhado e bonito */
@@ -30,7 +30,7 @@
     <div class="video-page">
         <div class="video-bg">
             <video autoplay muted loop playsinline id="bg-video">
-                <source src="{{ asset('assets/img/background.mp4') }}" type="video/mp4">
+                <source src="{{ asset('/assets/img/background.mp4') }}" type="video/mp4">
             </video>
         </div>
 
