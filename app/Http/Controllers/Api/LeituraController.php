@@ -17,7 +17,7 @@ class LeituraController extends Controller
     public function store(Request $request): JsonResponse
     {
         $dadosValidados = $request->validate([
-            'dispositivo_id' => 'string',
+            'dispositivo_id' => 'string|nullable',
             'temperatura'    => 'numeric|nullable',
             'umidade'        => 'numeric|nullable',
             'peso'           => 'numeric|nullable',
@@ -35,14 +35,14 @@ class LeituraController extends Controller
     }
 
     /**
-     * Retorna os dados consolidados (médias) de todas as máquinas logadas e ativas.
+     * Retorna os dados consolidados (médias) mapeados exatamente para o Frontend.
      */
     public function latest(): JsonResponse
     {
         // Define o intervalo de atividade (máquinas que enviaram dados nos últimos 10 minutos)
         $limiteAtivo = Carbon::now()->subMinutes(10);
 
-        // Agrega os dados reais do banco sem usar dados fictícios
+        // Agrega os dados reais do banco
         $agregado = LeituraArduino::select(
                 DB::raw('AVG(umidade) as umidade_media'),
                 DB::raw('AVG(temperatura) as temperatura_media'),
@@ -59,27 +59,38 @@ class LeituraController extends Controller
             return response()->json([
                 'ok' => true,
                 'data' => [
-                    'id' => time(),
-                    'umidade_media' => 0,
-                    'temperatura_media' => 0,
-                    'ph_medio' => 0,
-                    'gas_medio' => 0,
-                    'peso_total' => 0,
-                    'total_maquinas' => 0
+                    'id' => null, // Deixando nulo para ativar o aviso de "Dispositivo não encontrado" no JS
+                    'umidade' => 0,
+                    'temperatura' => 0,
+                    'ph' => 0,
+                    'gas' => 0,
+                    'peso' => 0,
+                    'total_maquinas' => 0,
+                    'status_contaminacao' => 'desconectado'
                 ]
             ]);
+        }
+
+        // Determina o status com base no novo sensor de Gás ou Umidade
+        // Exemplo: se o gás passar de 400 ppm, gera um alerta automático no painel
+        $status = 'ideal';
+        if ($agregado->gas_medio > 600) {
+            $status = 'risco';
+        } elseif ($agregado->gas_medio > 300) {
+            $status = 'atencao';
         }
 
         return response()->json([
             'ok' => true,
             'data' => [
-                'id' => time(), // Timestamp simulando ID dinâmico para forçar a atualização dos gráficos
-                'umidade_media' => (float) $agregado->umidade_media,
-                'temperatura_media' => (float) $agregado->temperatura_media,
-                'ph_medio' => (float) $agregado->ph_medio,
-                'gas_medio' => (float) $agregado->gas_medio,
-                'peso_total' => (float) $agregado->peso_total,
+                'id' => time(), // Mantido o timestamp dinâmico para forçar o Chart.js a plotar a linha em tempo real
+                'umidade' => (float) $agregado->umidade_media,
+                'temperatura' => (float) $agregado->temperatura_media,
+                'ph' => (float) ($agregado->ph_medio ?? 7.0), // Fallback amigável para o indicador de pH fixo
+                'gas' => (float) $agregado->gas_medio,
+                'peso' => (float) $agregado->peso_total,
                 'total_maquinas' => (int) $agregado->total_maquinas,
+                'status_contaminacao' => $status,
             ],
             'updated_at' => Carbon::now()->toDateTimeString(),
         ]);
