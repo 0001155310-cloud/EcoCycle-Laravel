@@ -86,16 +86,16 @@
 @endsection
 
 @section('content')
-<section id="dashboard" class="dashboard-hero" style="max-width: 100%; width: 100%; padding: 1.5rem; background-color: #f8fafc; overflow-x: hidden; box-sizing: border-box;">
+<section class="dashboard-hero">
     <div class="dash-top">
         <div>
             <h2>Painel do Cliente</h2>
             <p>Acompanhe a saúde da sua compostagem e o desempenho dos sensores em tempo real.</p>
         </div>
-        <span class="live-pill"><span class="live-dot"></span>Atualização automática a cada segundo</span>
+        <span class="live-pill"><span class="live-dot"></span>Atualização automática</span>
     </div>
 
-    <div class="metrics-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; width: 100%;">
+    <div class="metrics-grid">
         <article class="metric-card">
             <div class="metric-label">Umidade do Solo</div>
             <div class="metric-value" id="val-umidade">--</div>
@@ -113,14 +113,14 @@
         </article>
     </div>
 
-    <div class="projects-container" id="graficos" style="display: flex; flex-direction: column; gap: 1.5rem; width: 100%;">
+    <div class="projects-container" id="graficos">
         
-        <article class="project-item full-width-card" style="width: 100%;">
-            <div class="ccard" style="display: flex; flex-direction: column; padding: 1.5rem; background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); width: 100%;">
-                <span class="tag" style="align-self: flex-start; margin-bottom: 0.5rem;">Umidade em tempo real</span>
-                <h3 style="margin-bottom: 0.25rem;">Variação da umidade do solo</h3>
-                <p id="deviceWarning" class="device-warning" style="color: #e74c3c; font-size: 0.9rem; margin-bottom: 1rem;">Nenhum dispositivo Arduino encontrado no banco. Conecte um sensor para ver a leitura em tempo real.</p>
-                <div class="chart-wrapper">
+        <article class="project-item full-width-card">
+            <div class="chart-container full-chart-card">
+                <span class="tag">Umidade em tempo real</span>
+                <h3>Variação da umidade do solo</h3>
+                <p id="deviceWarning" class="device-warning" style="color: #e74c3c; font-size: 0.9rem; margin-top: 0.5rem; display: none;">Nenhum dispositivo Arduino encontrado no banco. Conecte um sensor para ver a leitura em tempo real.</p>
+                <div class="chart-wrapper" style="margin-top: 1.5rem;">
                     <canvas id="liveHumidityChart"></canvas>
                 </div>
             </div>
@@ -129,7 +129,7 @@
         <div class="charts-responsive-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; width: 100%;">
             
             <article class="project-item">
-                <div class="chart-container full-chart-card" style="min-height: 340px; display: flex; flex-direction: column; justify-content: center; width: 100%;">
+                <div class="chart-container full-chart-card" style="height: 100%; display: flex; flex-direction: column; justify-content: center;">
                     <span class="tag">Indicadores</span>
                     <h3>pH, Gás e Peso</h3>
                     <div class="indicator-grid" style="margin-top: 1rem;">
@@ -141,10 +141,10 @@
             </article>
 
             <article class="project-item">
-                <div class="ccard" style="display: flex; flex-direction: column; padding: 1.5rem; background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); width: 100%;">
-                    <span class="tag" style="align-self: flex-start; margin-bottom: 0.5rem;">Temperatura Real</span>
+                <div class="chart-container full-chart-card" style="height: 100%; display: flex; flex-direction: column;">
+                    <span class="tag">Temperatura Real</span>
                     <h3 style="margin-bottom: 1rem;">Histórico Térmico do Composto (°C)</h3>
-                    <div class="chart-wrapper">
+                    <div class="chart-wrapper" style="flex: 1;">
                         <canvas id="liveTemperatureChart"></canvas>
                     </div>
                 </div>
@@ -158,7 +158,6 @@
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // 1. Captura com segurança o dado inicial enviado pelo Laravel
     const initial = @json($latest ?? null);
     const MAX_PONTOS_GRAFICO = 20; 
     let ultimoIdInserido = null;
@@ -167,23 +166,17 @@
         labels: { font: { family: "'Inter', sans-serif", size: 12 } }
     });
 
-    // Função auxiliar para validar se o dado inicial é recente (evita o pico de 60% para 0)
     function dataInicialValida(dado) {
         if (!dado || !dado.created_at) return false;
-        
-        // Compara o horário do registro com o horário atual
         const dataRegistro = new Date(dado.created_at);
         const agora = new Date();
         const diferencaEmSegundos = Math.abs(agora - dataRegistro) / 1000;
-        
-        // Se o dado guardado no banco tem mais de 15 segundos, ignora para não quebrar o gráfico live
         return diferencaEmSegundos < 15;
     }
 
     const temDadoRecente = dataInicialValida(initial);
     const horaInicial = new Date().toLocaleTimeString('pt-BR', { hour12: false });
 
-    // 2. Inicialização dos gráficos ajustada
     const liveHumidityChart = new Chart(document.getElementById('liveHumidityChart').getContext('2d'), {
         type: 'line',
         data: {
@@ -236,14 +229,16 @@
 
     const deviceWarning = document.getElementById('deviceWarning');
 
-    // 3. Atualização lógica do painel de controle
     function updateDashboard(data) {
-        if (!data || Object.keys(data).length === 0) {
+        if (!data || Object.keys(data).length === 0 || data.is_offline) {
             deviceWarning.style.display = 'block';
             document.getElementById('val-umidade').textContent = '0%';
             document.getElementById('val-temperatura').textContent = '0°C';
             document.getElementById('val-peso').textContent = '0 kg';
             document.getElementById('status-text').textContent = 'Dispositivo não encontrado';
+            document.getElementById('bar-ph').style.width = '0%';
+            document.getElementById('bar-gas').style.width = '0%';
+            document.getElementById('bar-peso').style.width = '0%';
             return;
         }
 
@@ -263,9 +258,10 @@
         document.getElementById('info-ph').textContent = ph.toFixed(1);
         document.getElementById('info-gas').textContent = `${gas.toFixed(0)} ppm`;
         document.getElementById('info-peso').textContent = `${peso.toFixed(1)} kg`;
-        document.getElementById('bar-ph').style.style.width = `${Math.min(100, Math.max(8, ph * 10))}%`;
-        document.getElementById('bar-gas').style.style.width = `${Math.min(100, gas / 2.5)}%`;
-        document.getElementById('bar-peso').style.style.width = `${Math.min(100, peso * 5)}%`;
+        
+        document.getElementById('bar-ph').style.width = `${Math.min(100, Math.max(8, ph * 10))}%`;
+        document.getElementById('bar-gas').style.width = `${Math.min(100, gas / 2.5)}%`;
+        document.getElementById('bar-peso').style.width = `${Math.min(100, peso * 5)}%`;
 
         if (data.id !== ultimoIdInserido) {
             ultimoIdInserido = data.id;
@@ -292,21 +288,27 @@
         }
     }
 
-    // Usar caminho relativo direto elimina o risco de problemas com HTTPS/HTTP no Render
     function refreshData() {
         fetch('/api/arduino/latest') 
             .then(r => r.json())
             .then(result => {
-                if (result?.data) updateDashboard(result.data);
+                if (result?.data) {
+                    if (dataInicialValida(result.data)) {
+                        updateDashboard(result.data);
+                    } else {
+                        updateDashboard({ is_offline: true });
+                    }
+                }
             })
-            .catch(() => {});
+            .catch(() => {
+                updateDashboard({ is_offline: true });
+            });
     }
 
-    // Executa a carga inicial respeitando a regra de tempo
     if (temDadoRecente) {
         updateDashboard(initial);
     } else {
-        updateDashboard({});
+        updateDashboard({ is_offline: true });
     }
     
     setInterval(refreshData, 1000);
