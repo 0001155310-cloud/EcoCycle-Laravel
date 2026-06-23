@@ -1,62 +1,54 @@
 import serial
 import requests
 import time
-import json
+import re
 
-# ================= CONFIGURAÇÕES =================
-PORTA_SERIAL = 'COM7'  # Sua porta USB do Arduino
+# Configurações - Altere a porta COM se necessário
+PORTA_SERIAL = 'COM3'  # No Windows costuma ser COM3, COM4, etc.
 BAUD_RATE = 9600
+# Caminho relativo ou absoluto da API do seu sistema no Render
+URL_API = 'https://ecocycle-us8p.onrender.com/api/sensor/dados' 
 
-# Ajustado exatamente para o servidor que está rodando no seu print
-URL_API = "http://127.0.0.1/EcoCycle-Laravel/public/api/leituras" 
-# =================================================
-
-try:
-    # Inicializa a conexão com o Arduino
-    arduino = serial.Serial(PORTA_SERIAL, BAUD_RATE, timeout=1)
-    print(f"Conectado com sucesso ao Arduino na porta {PORTA_SERIAL}!")
-    print("Aguardando leituras... Mantenha esta janela aberta.")
-    time.sleep(2) # Tempo para o Arduino reiniciar após conectar
-except Exception as e:
-    print(f"Erro ao conectar na porta {PORTA_SERIAL}: {e}")
-    print("Verifique se o Monitor Serial da IDE do Arduino está fechado.")
-    exit()
+print("Iniciando ponte de comunicação com o Render...")
 
 while True:
     try:
-        # Se houver dados chegando na porta Serial
-        if arduino.in_waiting > 0:
-            # Lê a linha enviada pelo Arduino
-            leitura = arduino.readline().decode('utf-8').strip()
-            
-            if leitura:
-                # Converte o texto recebido (porcentagem) para número
-                umidade = float(leitura)
-                print(f"Sensor leu: {umidade}%")
-                
-                # Monta a estrutura JSON exatamente como o Laravel espera
-                payload = {
-                    "dispositivo_id": "estacao-uno",
-                    "umidade": umidade,
-                    "temperatura": 0, # Valores fixos fictícios já que o UNO só lê umidade por enquanto
-                    "peso": 0,
-                    "ph": 0,
-                    "gas": 0
-                }
-                
-                # Envia o POST para o Laravel
-                headers = {'Content-Type': 'application/json'}
-                resposta = requests.post(URL_API, data=json.dumps(payload), headers=headers)
-                
-                if resposta.status_code == 201:
-                    print("-> Gravado no banco do Laragon com sucesso!")
-                else:
-                    print(f"-> Erro no Laravel (Status {resposta.status_code}): {resposta.text}")
-                    
-    except ValueError:
-        # Ignora caso a linha venha incompleta ou com ruído
-        pass
-    except Exception as e:
-        print(f"Ocorreu um erro: {e}")
+        # Tenta conectar à porta USB do Arduino
+        ser = serial.Serial(PORTA_SERIAL, BAUD_RATE, timeout=1)
+        print(f"Conectado com sucesso na porta {PORTA_SERIAL}")
         
-    time.sleep(1) # Aguarda 1 segundo para o próximo ciclo
+        while True:
+            if ser.in_waiting > 0:
+                # Lê a linha enviada pelo Arduino
+                linha = ser.readline().decode('utf-8', errors='ignore').strip()
+                
+                # Expressão regular para capturar os números printados pelo Arduino
+                match = re.search(r"Temp:\s*([\d\.]+)\s*\|\s*Umidade:\s*(\d+)\s*\|\s*Gas:\s*(\d+)", linha)
+                
+                if match:
+                    temp = float(match.group(1))
+                    umidade = int(match.group(2))
+                    gas = int(match.group(3))
+                    
+                    # Monta o JSON esperado pelo seu Laravel
+                    dados = {
+                        "temperatura": temp,
+                        "umidade": umidade,
+                        "gas": gas
+                    }
+                    
+                    # Envia para a nuvem
+                    try:
+                        resposta = requests.post(URL_API, json=dados, timeout=5)
+                        if resposta.status_code == 200 or resposta.status_code == 201:
+                            print(f"Dados enviados para o Render: {dados}")
+                        else:
+                            print(f"Erro na API ({resposta.status_code}): {resposta.text}")
+                    except requests.exceptions.RequestException:
+                        print("Erro de conexão ao tentar alcançar o servidor Render.")
+                        
+            time.sleep(1)
+            
+    except serial.SerialException:
+        print(f"Aguardando o Arduino ser conectado na porta {PORTA_SERIAL}...")
+        time.sleep(5) # Tenta reconectar a cada 5 segundos se o cabo for desplugado

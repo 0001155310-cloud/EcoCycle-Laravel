@@ -104,6 +104,7 @@
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    // 1. Captura inicial do Blade
     const initial = @json($latest ?? null);
     const MAX_PONTOS_GRAFICO = 20; 
     let ultimoIdInserido = null;
@@ -112,14 +113,26 @@
         labels: { boxWidth: 10, font: { size: 12, family: "'Inter', sans-serif", weight: '600' } }
     });
 
-    // 1. Linha - Umidade Média Global
+    // Função auxiliar para evitar o pico fantasma nos gráficos caso o dado no banco seja antigo
+    function dataInicialValida(dado) {
+        if (!dado || !dado.created_at) return false;
+        const dataRegistro = new Date(dado.created_at);
+        const agora = new Date();
+        const diferencaEmSegundos = Math.abs(agora - dataRegistro) / 1000;
+        return diferencaEmSegundos < 15; // Aceita se o registro tiver menos de 15 segundos
+    }
+
+    const temDadoRecente = dataInicialValida(initial);
+    const horaInicial = new Date().toLocaleTimeString('pt-BR', { hour12: false });
+
+    // 1. Linha - Umidade Média Global (Corrigida a inicialização)
     const humidityChart = new Chart(document.getElementById('humidityChart').getContext('2d'), {
         type: 'line',
         data: {
-            labels: initial ? [new Date().toLocaleTimeString('pt-BR', { hour12: false })] : [],
+            labels: temDadoRecente ? [horaInicial] : [],
             datasets: [{
                 label: 'Média de Umidade (%)',
-                data: initial ? [Number(initial.umidade_media ?? 0)] : [],
+                data: temDadoRecente ? [Number(initial.umidade_media ?? 0)] : [],
                 borderColor: '#0284c7',
                 backgroundColor: 'rgba(2, 132, 199, 0.04)',
                 tension: 0.35,
@@ -147,14 +160,14 @@
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
     });
 
-    // 3. Linha - Temperatura Média
+    // 3. Linha - Temperatura Média (Corrigida a inicialização)
     const temperatureChart = new Chart(document.getElementById('temperatureChart').getContext('2d'), {
         type: 'line',
         data: {
-            labels: initial ? [new Date().toLocaleTimeString('pt-BR', { hour12: false })] : [],
+            labels: temDadoRecente ? [horaInicial] : [],
             datasets: [{
                 label: 'Média de Temperatura (°C)',
-                data: initial ? [Number(initial.temperatura_media ?? 0)] : [],
+                data: temDadoRecente ? [Number(initial.temperatura_media ?? 0)] : [],
                 borderColor: '#ea580c',
                 backgroundColor: 'rgba(234, 88, 12, 0.04)',
                 tension: 0.35,
@@ -166,14 +179,14 @@
         options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 80 } } }
     });
 
-    // 4. Linha - Infraestrutura / Latência
+    // 4. Linha - Infraestrutura / Latência (Corrigida a inicialização)
     const networkChart = new Chart(document.getElementById('networkChart').getContext('2d'), {
         type: 'line',
         data: {
-            labels: initial ? [new Date().toLocaleTimeString('pt-BR', { hour12: false })] : [],
+            labels: temDadoRecente ? [horaInicial] : [],
             datasets: [{
                 label: 'Resposta do Endpoint (ms)',
-                data: initial ? [20] : [],
+                data: temDadoRecente ? [20] : [],
                 borderColor: '#64748b',
                 backgroundColor: 'rgba(100, 116, 139, 0.04)',
                 tension: 0.2,
@@ -186,7 +199,12 @@
     });
 
     function updateAdminDashboard(data, latency = 20) {
-        if (!data || Object.keys(data).length === 0) return;
+        if (!data || Object.keys(data).length === 0) {
+            document.getElementById('admin-umidade').textContent = '0';
+            document.getElementById('admin-temperatura').textContent = '0.0';
+            document.getElementById('admin-status').textContent = '0';
+            return;
+        }
 
         const umidade = Number(data?.umidade_media ?? 0);
         const temperatura = Number(data?.temperatura_media ?? 0);
@@ -195,23 +213,19 @@
         const peso = Number(data?.peso_total ?? 0);
         const totalMaquinas = data?.total_maquinas ?? 0;
 
-        // Atualização Dinâmica dos Cards Estilizados
         document.getElementById('admin-umidade').textContent = umidade.toFixed(0);
         document.getElementById('admin-temperatura').textContent = temperatura.toFixed(1);
         document.getElementById('admin-status').textContent = totalMaquinas;
 
-        // Atualização do gráfico de colunas
         profitChart.data.datasets[0].data = [ph, gas, peso];
         profitChart.update();
 
-        // Push de dados nas linhas de tempo em tempo real
         if (data.id !== ultimoIdInserido) {
             ultimoIdInserido = data.id;
 
             const agora = new Date();
             const horaFormatada = agora.toLocaleTimeString('pt-BR', { hour12: false });
 
-            // Adiciona novos registros
             humidityChart.data.labels.push(horaFormatada);
             humidityChart.data.datasets[0].data.push(umidade);
 
@@ -221,7 +235,6 @@
             networkChart.data.labels.push(horaFormatada);
             networkChart.data.datasets[0].data.push(latency);
 
-            // Mantém a janela deslizante de tamanho máximo histórico fixado em 20 pontos
             if (humidityChart.data.labels.length > MAX_PONTOS_GRAFICO) {
                 humidityChart.data.labels.shift();
                 humidityChart.data.datasets[0].data.shift();
@@ -239,10 +252,11 @@
         }
     }
 
+    // Alterado para caminho relativo de API para respeitar o HTTPS do Render automaticamente
     function refreshAdminData() {
         const startTime = performance.now();
 
-        fetch('{{ route('arduino.latest') }}')
+        fetch('/api/arduino/latest')
             .then(r => r.json())
             .then(result => { 
                 const endTime = performance.now();
@@ -255,8 +269,13 @@
             .catch(() => {});
     }
 
-    // Inicialização da tela com carga primária
-    updateAdminDashboard(initial || {});
+    // Inicialização segura
+    if (temDadoRecente) {
+        updateAdminDashboard(initial);
+    } else {
+        updateAdminDashboard({});
+    }
+    
     setInterval(refreshAdminData, 1000);
 </script>
 @endsection

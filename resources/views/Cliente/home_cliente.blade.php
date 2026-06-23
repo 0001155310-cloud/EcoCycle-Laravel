@@ -158,6 +158,7 @@
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    // 1. Captura com segurança o dado inicial enviado pelo Laravel
     const initial = @json($latest ?? null);
     const MAX_PONTOS_GRAFICO = 20; 
     let ultimoIdInserido = null;
@@ -166,14 +167,30 @@
         labels: { font: { family: "'Inter', sans-serif", size: 12 } }
     });
 
-    // Configuração com resize e re-renderização nativa ativa para as curvas
+    // Função auxiliar para validar se o dado inicial é recente (evita o pico de 60% para 0)
+    function dataInicialValida(dado) {
+        if (!dado || !dado.created_at) return false;
+        
+        // Compara o horário do registro com o horário atual
+        const dataRegistro = new Date(dado.created_at);
+        const agora = new Date();
+        const diferencaEmSegundos = Math.abs(agora - dataRegistro) / 1000;
+        
+        // Se o dado guardado no banco tem mais de 15 segundos, ignora para não quebrar o gráfico live
+        return diferencaEmSegundos < 15;
+    }
+
+    const temDadoRecente = dataInicialValida(initial);
+    const horaInicial = new Date().toLocaleTimeString('pt-BR', { hour12: false });
+
+    // 2. Inicialização dos gráficos ajustada
     const liveHumidityChart = new Chart(document.getElementById('liveHumidityChart').getContext('2d'), {
         type: 'line',
         data: {
-            labels: initial ? [new Date().toLocaleTimeString('pt-BR', { hour12: false })] : [],
+            labels: temDadoRecente ? [horaInicial] : [],
             datasets: [{
                 label: 'Umidade (%)',
-                data: initial ? [Number(initial.umidade)] : [],
+                data: temDadoRecente ? [Number(initial.umidade)] : [],
                 borderColor: '#296d7e',
                 backgroundColor: 'rgba(41, 109, 126, 0.08)',
                 tension: 0.35,
@@ -184,7 +201,7 @@
         options: { 
             responsive: true,
             maintainAspectRatio: false,
-            resizeDelay: 100, // Dá uma fração de segundo para estabilizar o tamanho da tela
+            resizeDelay: 100,
             scales: { 
                 y: { beginAtZero: true, min: 0, max: 100, grid: { color: 'rgba(0,0,0,0.03)' } },
                 x: { grid: { display: false } }
@@ -195,10 +212,10 @@
     const liveTemperatureChart = new Chart(document.getElementById('liveTemperatureChart').getContext('2d'), {
         type: 'line',
         data: {
-            labels: initial ? [new Date().toLocaleTimeString('pt-BR', { hour12: false })] : [],
+            labels: temDadoRecente ? [horaInicial] : [],
             datasets: [{
                 label: 'Temperatura (°C)',
-                data: initial ? [Number(initial.temperatura)] : [],
+                data: temDadoRecente ? [Number(initial.temperatura)] : [],
                 borderColor: '#e67e22',
                 backgroundColor: 'rgba(230, 126, 34, 0.08)',
                 tension: 0.35,
@@ -219,6 +236,7 @@
 
     const deviceWarning = document.getElementById('deviceWarning');
 
+    // 3. Atualização lógica do painel de controle
     function updateDashboard(data) {
         if (!data || Object.keys(data).length === 0) {
             deviceWarning.style.display = 'block';
@@ -245,9 +263,9 @@
         document.getElementById('info-ph').textContent = ph.toFixed(1);
         document.getElementById('info-gas').textContent = `${gas.toFixed(0)} ppm`;
         document.getElementById('info-peso').textContent = `${peso.toFixed(1)} kg`;
-        document.getElementById('bar-ph').style.width = `${Math.min(100, Math.max(8, ph * 10))}%`;
-        document.getElementById('bar-gas').style.width = `${Math.min(100, gas / 2.5)}%`;
-        document.getElementById('bar-peso').style.width = `${Math.min(100, peso * 5)}%`;
+        document.getElementById('bar-ph').style.style.width = `${Math.min(100, Math.max(8, ph * 10))}%`;
+        document.getElementById('bar-gas').style.style.width = `${Math.min(100, gas / 2.5)}%`;
+        document.getElementById('bar-peso').style.style.width = `${Math.min(100, peso * 5)}%`;
 
         if (data.id !== ultimoIdInserido) {
             ultimoIdInserido = data.id;
@@ -274,8 +292,9 @@
         }
     }
 
+    // Usar caminho relativo direto elimina o risco de problemas com HTTPS/HTTP no Render
     function refreshData() {
-        fetch('{{ route('arduino.latest') }}')
+        fetch('/api/arduino/latest') 
             .then(r => r.json())
             .then(result => {
                 if (result?.data) updateDashboard(result.data);
@@ -283,7 +302,13 @@
             .catch(() => {});
     }
 
-    updateDashboard(initial || {});
+    // Executa a carga inicial respeitando a regra de tempo
+    if (temDadoRecente) {
+        updateDashboard(initial);
+    } else {
+        updateDashboard({});
+    }
+    
     setInterval(refreshData, 1000);
 </script>
 @endsection
