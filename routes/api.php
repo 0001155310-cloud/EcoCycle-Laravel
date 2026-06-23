@@ -11,3 +11,5 @@ Route::get('/user', function (Request $request) {
 
 // 2. CORREÇÃO: Rota aberta (sem o middleware do sanctum) para o Arduino conseguir acessar
 Route::post('/leituras', [LeituraController::class, 'store']);
+// Rota para o painel web consultar os últimos dados consolidados
+Route::get('/leituras/latest', [LeituraController::class, 'latest'])->name('arduino.latest'); 

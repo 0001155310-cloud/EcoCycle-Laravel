@@ -35,14 +35,12 @@ class LeituraController extends Controller
     }
 
     /**
-     * Retorna os dados consolidados (médias) mapeados exatamente para o Frontend.
+     * ESCOPO ADMIN: Retorna os dados consolidados (médias) dos últimos 15 minutos.
      */
     public function latest(): JsonResponse
     {
-        // Define o intervalo de atividade (máquinas que enviaram dados nos últimos 10 minutos)
-        $limiteAtivo = Carbon::now()->subMinutes(10);
+        $limiteAtivo = Carbon::now()->subMinutes(15);
 
-        // Agrega os dados reais do banco
         $agregado = LeituraArduino::select(
                 DB::raw('AVG(umidade) as umidade_media'),
                 DB::raw('AVG(temperatura) as temperatura_media'),
@@ -54,25 +52,22 @@ class LeituraController extends Controller
             ->where('created_at', '>=', $limiteAtivo)
             ->first();
 
-        // Fallback preventivo caso nenhuma máquina esteja transmitindo no momento
         if (!$agregado || $agregado->total_maquinas == 0) {
             return response()->json([
                 'ok' => true,
                 'data' => [
-                    'id' => null, // Deixando nulo para ativar o aviso de "Dispositivo não encontrado" no JS
+                    'id' => null,
                     'umidade' => 0,
                     'temperatura' => 0,
                     'ph' => 0,
                     'gas' => 0,
                     'peso' => 0,
                     'total_maquinas' => 0,
-                    'status_contaminacao' => 'desconectado'
+                    'status_contaminacao' => 'Desconectado'
                 ]
             ]);
         }
 
-        // Determina o status com base no novo sensor de Gás ou Umidade
-        // Exemplo: se o gás passar de 400 ppm, gera um alerta automático no painel
         $status = 'ideal';
         if ($agregado->gas_medio > 600) {
             $status = 'risco';
@@ -83,16 +78,61 @@ class LeituraController extends Controller
         return response()->json([
             'ok' => true,
             'data' => [
-                'id' => time(), // Mantido o timestamp dinâmico para forçar o Chart.js a plotar a linha em tempo real
+                'id' => time(), 
                 'umidade' => (float) $agregado->umidade_media,
                 'temperatura' => (float) $agregado->temperatura_media,
-                'ph' => (float) ($agregado->ph_medio ?? 7.0), // Fallback amigável para o indicador de pH fixo
+                'ph' => (float) ($agregado->ph_medio ?? 7.0), 
                 'gas' => (float) $agregado->gas_medio,
                 'peso' => (float) $agregado->peso_total,
                 'total_maquinas' => (int) $agregado->total_maquinas,
                 'status_contaminacao' => $status,
             ],
             'updated_at' => Carbon::now()->toDateTimeString(),
+        ]);
+    }
+
+    /**
+     * ESCOPO CLIENTE: Retorna o último registro bruto exato (Ao Vivo).
+     */
+    public function live(): JsonResponse
+    {
+        $ultimaLeitura = LeituraArduino::orderBy('created_at', 'desc')->first();
+
+        // Se não houver dados ou o dispositivo parar de enviar por mais de 60 segundos
+        if (!$ultimaLeitura || $ultimaLeitura->created_at->diffInSeconds(now()) > 60) {
+            return response()->json([
+                'ok' => true,
+                'data' => [
+                    'id' => null,
+                    'umidade' => 0,
+                    'temperatura' => 0,
+                    'ph' => 0,
+                    'gas' => 0,
+                    'peso' => 0,
+                    'status_contaminacao' => 'Desconectado'
+                ]
+            ]);
+        }
+
+        $status = 'Ideal';
+        if ($ultimaLeitura->gas > 600) {
+            $status = 'Risco';
+        } elseif ($ultimaLeitura->gas > 300) {
+            $status = 'Atenção';
+        }
+
+        return response()->json([
+            'ok' => true,
+            'data' => [
+                'id' => $ultimaLeitura->id,
+                'umidade' => (float) $ultimaLeitura->umidade,
+                'temperatura' => (float) $ultimaLeitura->temperatura,
+                'ph' => (float) ($ultimaLeitura->ph ?? 7.0),
+                'gas' => (float) $ultimaLeitura->gas,
+                'peso' => (float) ($ultimaLeitura->peso ?? 0.0),
+                'status_contaminacao' => $status
+            ],
+            'updated_at' => $ultimaLeitura->created_at->toDateTimeString(),
         ]);
     }
 }

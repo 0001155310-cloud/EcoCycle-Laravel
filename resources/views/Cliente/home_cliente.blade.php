@@ -3,7 +3,6 @@
 
 @section('styles')
 <style>
-    /* Garante que o cálculo de tamanhos inclua paddings sem estourar limites */
     *, ::after, ::before {
         box-sizing: border-box;
     }
@@ -11,7 +10,7 @@
     .chart-wrapper {
         position: relative;
         width: 100%;
-        height: 300px; /* Altura padrão bem definida para o Chart.js respirar */
+        height: 300px;
     }
     
     @media (max-width: 768px) {
@@ -25,7 +24,6 @@
             padding: 1rem !important;
             margin-bottom: 1.5rem;
         }
-        /* Força o empilhamento correto e evita o esmagamento lateral */
         .metrics-grid {
             grid-template-columns: 1fr !important;
             gap: 1rem !important;
@@ -66,7 +64,6 @@
         .indicator-card strong {
             font-size: 1.35rem !important;
         }
-        /* Reduz ligeiramente a altura no mobile para evitar cortes verticais */
         .chart-wrapper {
             height: 200px;
         }
@@ -77,7 +74,6 @@
             height: 220px !important;
             max-height: 220px !important;
         }
-        /* Remove paddings excessivos do card nativo que empurram o gráfico para fora */
         .ccard {
             padding: 1rem !important;
         }
@@ -158,7 +154,8 @@
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    const initial = @json($latest ?? null);
+    // Se o seu controller enviar para a view $live ou $latest, ele captura aqui de forma segura
+    const initial = @json($live ?? $latest ?? null);
     const MAX_PONTOS_GRAFICO = 20; 
     let ultimoIdInserido = null;
 
@@ -166,24 +163,14 @@
         labels: { font: { family: "'Inter', sans-serif", size: 12 } }
     });
 
-    function dataInicialValida(dado) {
-        if (!dado || !dado.created_at) return false;
-        const dataRegistro = new Date(dado.created_at);
-        const agora = new Date();
-        const diferencaEmSegundos = Math.abs(agora - dataRegistro) / 1000;
-        return diferencaEmSegundos < 15;
-    }
-
-    const temDadoRecente = dataInicialValida(initial);
-    const horaInicial = new Date().toLocaleTimeString('pt-BR', { hour12: false });
-
+    // Inicialização do Gráfico de Umidade
     const liveHumidityChart = new Chart(document.getElementById('liveHumidityChart').getContext('2d'), {
         type: 'line',
         data: {
-            labels: temDadoRecente ? [horaInicial] : [],
+            labels: [],
             datasets: [{
                 label: 'Umidade (%)',
-                data: temDadoRecente ? [Number(initial.umidade)] : [],
+                data: [],
                 borderColor: '#296d7e',
                 backgroundColor: 'rgba(41, 109, 126, 0.08)',
                 tension: 0.35,
@@ -202,13 +189,14 @@
         }
     });
 
+    // Inicialização do Gráfico de Temperatura
     const liveTemperatureChart = new Chart(document.getElementById('liveTemperatureChart').getContext('2d'), {
         type: 'line',
         data: {
-            labels: temDadoRecente ? [horaInicial] : [],
+            labels: [],
             datasets: [{
                 label: 'Temperatura (°C)',
-                data: temDadoRecente ? [Number(initial.temperatura)] : [],
+                data: [],
                 borderColor: '#e67e22',
                 backgroundColor: 'rgba(230, 126, 34, 0.08)',
                 tension: 0.35,
@@ -229,8 +217,9 @@
 
     const deviceWarning = document.getElementById('deviceWarning');
 
+    // Atualiza os elementos HTML da tela
     function updateDashboard(data) {
-        if (!data || Object.keys(data).length === 0 || data.is_offline) {
+        if (!data || !data.id) {
             deviceWarning.style.display = 'block';
             document.getElementById('val-umidade').textContent = '0%';
             document.getElementById('val-temperatura').textContent = '0°C';
@@ -242,18 +231,18 @@
             return;
         }
 
-        const umidade = Number(data?.umidade ?? 0);
-        const temperatura = Number(data?.temperatura ?? 0);
-        const peso = Number(data?.peso ?? 0);
-        const ph = Number(data?.ph ?? 0);
-        const gas = Number(data?.gas ?? 0);
+        const umidade = Number(data.umidade ?? 0);
+        const temperatura = Number(data.temperatura ?? 0);
+        const peso = Number(data.peso ?? 0);
+        const ph = Number(data.ph ?? 0);
+        const gas = Number(data.gas ?? 0);
 
         deviceWarning.style.display = 'none';
 
         document.getElementById('val-umidade').textContent = `${umidade.toFixed(0)}%`;
         document.getElementById('val-temperatura').textContent = `${temperatura.toFixed(1)}°C`;
         document.getElementById('val-peso').textContent = `${peso.toFixed(1)} kg`;
-        document.getElementById('status-text').textContent = (data?.status_contaminacao || 'nao_analisado').replace(/_/g, ' ');
+        document.getElementById('status-text').textContent = (data.status_contaminacao || 'nao_analisado');
 
         document.getElementById('info-ph').textContent = ph.toFixed(1);
         document.getElementById('info-gas').textContent = `${gas.toFixed(0)} ppm`;
@@ -263,6 +252,7 @@
         document.getElementById('bar-gas').style.width = `${Math.min(100, gas / 2.5)}%`;
         document.getElementById('bar-peso').style.width = `${Math.min(100, peso * 5)}%`;
 
+        // Se for um registro novo que acabou de entrar no banco, empurra pro gráfico caminhar ao vivo
         if (data.id !== ultimoIdInserido) {
             ultimoIdInserido = data.id;
 
@@ -288,29 +278,30 @@
         }
     }
 
+    // Busca os dados dinâmicos da rota live 
     function refreshData() {
-        fetch('/api/arduino/latest') 
+        fetch('/api/arduino/live') 
             .then(r => r.json())
             .then(result => {
-                if (result?.data) {
-                    if (dataInicialValida(result.data)) {
-                        updateDashboard(result.data);
-                    } else {
-                        updateDashboard({ is_offline: true });
-                    }
+                if (result && result.data && result.data.id !== null) {
+                    updateDashboard(result.data);
+                } else {
+                    updateDashboard(null); 
                 }
             })
             .catch(() => {
-                updateDashboard({ is_offline: true });
+                updateDashboard(null);
             });
     }
 
-    if (temDadoRecente) {
+    // Inicialização direta estável
+    if (initial && initial.id) {
         updateDashboard(initial);
     } else {
-        updateDashboard({ is_offline: true });
+        refreshData();
     }
     
+    // Dispara a busca em background a cada 1 segundo (Tempo Real)
     setInterval(refreshData, 1000);
 </script>
 @endsection
