@@ -104,7 +104,6 @@
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // 1. Captura inicial do Blade
     const initial = @json($latest ?? null);
     const MAX_PONTOS_GRAFICO = 20; 
     let ultimoIdInserido = null;
@@ -113,26 +112,22 @@
         labels: { boxWidth: 10, font: { size: 12, family: "'Inter', sans-serif", weight: '600' } }
     });
 
-    // Função auxiliar para evitar o pico fantasma nos gráficos caso o dado no banco seja antigo
     function dataInicialValida(dado) {
-        if (!dado || !dado.created_at) return false;
-        const dataRegistro = new Date(dado.created_at);
-        const agora = new Date();
-        const diferencaEmSegundos = Math.abs(agora - dataRegistro) / 1000;
-        return diferencaEmSegundos < 15; // Aceita se o registro tiver menos de 15 segundos
+        if (!dado || !dado.id) return false;
+        return true;
     }
 
     const temDadoRecente = dataInicialValida(initial);
     const horaInicial = new Date().toLocaleTimeString('pt-BR', { hour12: false });
 
-    // 1. Linha - Umidade Média Global (Corrigida a inicialização)
+    // 1. Linha - Umidade Média Global
     const humidityChart = new Chart(document.getElementById('humidityChart').getContext('2d'), {
         type: 'line',
         data: {
             labels: temDadoRecente ? [horaInicial] : [],
             datasets: [{
                 label: 'Média de Umidade (%)',
-                data: temDadoRecente ? [Number(initial.umidade_media ?? 0)] : [],
+                data: temDadoRecente ? [Number(initial.umidade ?? 0)] : [],
                 borderColor: '#0284c7',
                 backgroundColor: 'rgba(2, 132, 199, 0.04)',
                 tension: 0.35,
@@ -151,7 +146,7 @@
             labels: ['pH Médio', 'Gás Médio (ppm)', 'Peso Total (kg)'],
             datasets: [{
                 label: 'Métricas Atuais',
-                data: [initial?.ph_medio ?? 0, initial?.gas_medio ?? 0, initial?.peso_total ?? 0],
+                data: [initial?.ph ?? 0, initial?.gas ?? 0, initial?.peso ?? 0],
                 backgroundColor: ['#475569', '#ea580c', '#16a34a'],
                 borderRadius: 8,
                 barThickness: 32
@@ -160,14 +155,14 @@
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
     });
 
-    // 3. Linha - Temperatura Média (Corrigida a inicialização)
+    // 3. Linha - Temperatura Média
     const temperatureChart = new Chart(document.getElementById('temperatureChart').getContext('2d'), {
         type: 'line',
         data: {
             labels: temDadoRecente ? [horaInicial] : [],
             datasets: [{
                 label: 'Média de Temperatura (°C)',
-                data: temDadoRecente ? [Number(initial.temperatura_media ?? 0)] : [],
+                data: temDadoRecente ? [Number(initial.temperatura ?? 0)] : [],
                 borderColor: '#ea580c',
                 backgroundColor: 'rgba(234, 88, 12, 0.04)',
                 tension: 0.35,
@@ -179,7 +174,7 @@
         options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 80 } } }
     });
 
-    // 4. Linha - Infraestrutura / Latência (Corrigida a inicialização)
+    // 4. Linha - Infraestrutura / Latência
     const networkChart = new Chart(document.getElementById('networkChart').getContext('2d'), {
         type: 'line',
         data: {
@@ -199,18 +194,19 @@
     });
 
     function updateAdminDashboard(data, latency = 20) {
-        if (!data || Object.keys(data).length === 0) {
+        if (!data || !data.id) {
             document.getElementById('admin-umidade').textContent = '0';
             document.getElementById('admin-temperatura').textContent = '0.0';
             document.getElementById('admin-status').textContent = '0';
             return;
         }
 
-        const umidade = Number(data?.umidade_media ?? 0);
-        const temperatura = Number(data?.temperatura_media ?? 0);
-        const ph = Number(data?.ph_medio ?? 0);
-        const gas = Number(data?.gas_medio ?? 0);
-        const peso = Number(data?.peso_total ?? 0);
+        // CORREÇÃO: Mapeando as chaves exatas geradas pelo LeituraController::latest()
+        const umidade = Number(data?.umidade ?? 0);
+        const temperatura = Number(data?.temperatura ?? 0);
+        const ph = Number(data?.ph ?? 0);
+        const gas = Number(data?.gas ?? 0);
+        const peso = Number(data?.peso ?? 0);
         const totalMaquinas = data?.total_maquinas ?? 0;
 
         document.getElementById('admin-umidade').textContent = umidade.toFixed(0);
@@ -252,7 +248,6 @@
         }
     }
 
-    // Alterado para caminho relativo de API para respeitar o HTTPS do Render automaticamente
     function refreshAdminData() {
         const startTime = performance.now();
 
@@ -262,7 +257,7 @@
                 const endTime = performance.now();
                 const executionTime = Math.round(endTime - startTime);
                 
-                if (result?.data) {
+                if (result && result.data) {
                     updateAdminDashboard(result.data, executionTime); 
                 }
             })
@@ -273,7 +268,7 @@
     if (temDadoRecente) {
         updateAdminDashboard(initial);
     } else {
-        updateAdminDashboard({});
+        refreshAdminData();
     }
     
     setInterval(refreshAdminData, 1000);

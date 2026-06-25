@@ -109,7 +109,7 @@
         </article>
     </div>
 
-    <div class="projects-container" id="graficos">
+    <div class="projects-container" id="graficos" style="display: flex; flex-direction: column; gap: 1.5rem; width: 100%;">
         
         <article class="project-item full-width-card">
             <div class="chart-container full-chart-card">
@@ -122,13 +122,15 @@
             </div>
         </article>
 
-        <div class="charts-responsive-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; width: 100%;">
+        <div class="charts-responsive-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; width: 100%; align-items: stretch;">
             
-            <article class="project-item">
-                <div class="chart-container full-chart-card" style="height: 100%; display: flex; flex-direction: column; justify-content: center;">
-                    <span class="tag">Indicadores</span>
-                    <h3>pH, Gás e Peso</h3>
-                    <div class="indicator-grid" style="margin-top: 1rem;">
+            <article class="project-item" style="display: flex;">
+                <div class="chart-container full-chart-card" style="display: flex; flex-direction: column; width: 100%; justify-content: space-between; padding: 1.5rem;">
+                    <div>
+                        <span class="tag">Indicadores</span>
+                        <h3 style="margin-bottom: 1rem;">pH, Gás e Peso</h3>
+                    </div>
+                    <div class="indicator-grid" style="display: flex; flex-direction: column; gap: 0.75rem; flex: 1; justify-content: center;">
                         <div class="indicator-card"><span class="indicator-label">pH</span><strong id="info-ph">--</strong><small>Neutralidade do composto</small><div class="indicator-bar"><i id="bar-ph"></i></div></div>
                         <div class="indicator-card"><span class="indicator-label">Gás</span><strong id="info-gas">--</strong><small>Concentração detectada</small><div class="indicator-bar"><i id="bar-gas"></i></div></div>
                         <div class="indicator-card"><span class="indicator-label">Peso</span><strong id="info-peso">--</strong><small>Material em processo</small><div class="indicator-bar"><i id="bar-peso"></i></div></div>
@@ -136,11 +138,11 @@
                 </div>
             </article>
 
-            <article class="project-item">
-                <div class="chart-container full-chart-card" style="height: 100%; display: flex; flex-direction: column;">
+            <article class="project-item" style="display: flex;">
+                <div class="chart-container full-chart-card" style="display: flex; flex-direction: column; width: 100%; padding: 1.5rem;">
                     <span class="tag">Temperatura Real</span>
                     <h3 style="margin-bottom: 1rem;">Histórico Térmico do Composto (°C)</h3>
-                    <div class="chart-wrapper" style="flex: 1;">
+                    <div class="chart-wrapper" style="flex: 1; min-height: 250px;">
                         <canvas id="liveTemperatureChart"></canvas>
                     </div>
                 </div>
@@ -154,7 +156,6 @@
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Se o seu controller enviar para a view $live ou $latest, ele captura aqui de forma segura
     const initial = @json($live ?? $latest ?? null);
     const MAX_PONTOS_GRAFICO = 20; 
     let ultimoIdInserido = null;
@@ -163,7 +164,6 @@
         labels: { font: { family: "'Inter', sans-serif", size: 12 } }
     });
 
-    // Inicialização do Gráfico de Umidade
     const liveHumidityChart = new Chart(document.getElementById('liveHumidityChart').getContext('2d'), {
         type: 'line',
         data: {
@@ -189,7 +189,6 @@
         }
     });
 
-    // Inicialização do Gráfico de Temperatura
     const liveTemperatureChart = new Chart(document.getElementById('liveTemperatureChart').getContext('2d'), {
         type: 'line',
         data: {
@@ -217,7 +216,6 @@
 
     const deviceWarning = document.getElementById('deviceWarning');
 
-    // Atualiza os elementos HTML da tela
     function updateDashboard(data) {
         if (!data || !data.id) {
             deviceWarning.style.display = 'block';
@@ -252,7 +250,6 @@
         document.getElementById('bar-gas').style.width = `${Math.min(100, gas / 2.5)}%`;
         document.getElementById('bar-peso').style.width = `${Math.min(100, peso * 5)}%`;
 
-        // Se for um registro novo que acabou de entrar no banco, empurra pro gráfico caminhar ao vivo
         if (data.id !== ultimoIdInserido) {
             ultimoIdInserido = data.id;
 
@@ -278,7 +275,6 @@
         }
     }
 
-    // Busca os dados dinâmicos da rota live 
     function refreshData() {
         fetch('/api/arduino/live') 
             .then(r => r.json())
@@ -294,14 +290,12 @@
             });
     }
 
-    // Inicialização direta estável
     if (initial && initial.id) {
         updateDashboard(initial);
     } else {
         refreshData();
     }
     
-    // Dispara a busca em background a cada 1 segundo (Tempo Real)
     setInterval(refreshData, 1000);
 </script>
 @endsection
