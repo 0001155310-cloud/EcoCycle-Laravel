@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\Clientes;
 use App\Models\LeituraArduino;
 use App\Models\TipoAcesso;
@@ -261,17 +262,18 @@ class WebsiteController extends Controller
         return view('Admin.vendas', compact('latest', 'clientes', 'leituras'));
     }
 
-    public function adminHistoricos()
+    public function adminHistoricos(Request $request)
     {
         if (!Auth::check() || Auth::user()->tipo_acesso_id != 2) {
             Auth::logout();
             return redirect()->route('login')->with('error', 'Acesso restrito a administradores.');
         }
 
-        $latest = LeituraArduino::latest()->first();
-        $historicos = LeituraArduino::latest()->take(8)->get();
+        // Unificado: Carrega ambas as tabelas reais do banco de dados de forma paginada e independente
+        $historicos = LeituraArduino::orderBy('created_at', 'desc')->paginate(10, ['*'], 'page_arduino');
+        $logs = ActivityLog::with('user')->orderBy('created_at', 'desc')->paginate(10, ['*'], 'page_logs');
 
-        return view('Admin.historicos', compact('latest', 'historicos'));
+        return view('Admin.historicos', compact('historicos', 'logs'));
     }
 
     public function adminRotas()

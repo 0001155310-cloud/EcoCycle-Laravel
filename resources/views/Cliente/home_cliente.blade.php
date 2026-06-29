@@ -110,7 +110,6 @@
     </div>
 
     <div class="projects-container" id="graficos" style="display: flex; flex-direction: column; gap: 1.5rem; width: 100%;">
-        
         <article class="project-item full-width-card">
             <div class="chart-container full-chart-card">
                 <span class="tag">Umidade em tempo real</span>
@@ -123,7 +122,6 @@
         </article>
 
         <div class="charts-responsive-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; width: 100%; align-items: stretch;">
-            
             <article class="project-item" style="display: flex;">
                 <div class="chart-container full-chart-card" style="display: flex; flex-direction: column; width: 100%; justify-content: space-between; padding: 1.5rem;">
                     <div>
@@ -147,7 +145,6 @@
                     </div>
                 </div>
             </article>
-
         </div>
     </div>
 </section>
@@ -159,6 +156,7 @@
     const initial = @json($live ?? $latest ?? null);
     const MAX_PONTOS_GRAFICO = 20; 
     let ultimoIdInserido = null;
+    let ultimaPortaAtiva = null; // Guarda o estado da porta ativa para detectar mudanças
 
     Chart.defaults.set('plugins.legend', {
         labels: { font: { family: "'Inter', sans-serif", size: 12 } }
@@ -275,8 +273,33 @@
         }
     }
 
+    // Limpa visualmente o gráfico se a porta mudar lá no Admin
+    function limparGraficosPorMudancaDePorta() {
+        liveHumidityChart.data.labels = [];
+        liveHumidityChart.data.datasets[0].data = [];
+        liveTemperatureChart.data.labels = [];
+        liveTemperatureChart.data.datasets[0].data = [];
+        liveHumidityChart.update();
+        liveTemperatureChart.update();
+        ultimoIdInserido = null;
+    }
+
     function refreshData() {
-        fetch('/api/arduino/live') 
+        // 1. Descobre de forma transparente qual porta o administrador ativou
+        fetch('/api/arduino/config-porta')
+            .then(res => res.json())
+            .then(config => {
+                const portaAtiva = config.porta || 'COM3';
+
+                // Se o administrador mudou a porta no painel dele, limpa as linhas para o cliente também
+                if (ultimaPortaAtiva !== null && ultimaPortaAtiva !== portaAtiva) {
+                    limparGraficosPorMudancaDePorta();
+                }
+                ultimaPortaAtiva = portaAtiva;
+
+                // 2. Busca o dado mais recente filtrando especificamente por aquela porta ativa
+                return fetch(`/api/arduino/latest?port=${encodeURIComponent(portaAtiva)}`);
+            })
             .then(r => r.json())
             .then(result => {
                 if (result && result.data && result.data.id !== null) {
@@ -290,12 +313,8 @@
             });
     }
 
-    if (initial && initial.id) {
-        updateDashboard(initial);
-    } else {
-        refreshData();
-    }
-    
+    // Inicialização segura
+    refreshData();
     setInterval(refreshData, 1000);
 </script>
 @endsection
