@@ -9,16 +9,13 @@
             <p style="color: #64748b; font-size: 0.95rem;">Monitoramento direto e qualificação de resíduos na entrada do processo.</p>
         </div>
         
-        <div style="display: inline-flex; align-items: center; gap: 0.75rem; background: #ffffff; padding: 0.5rem 1rem; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-            <span class="live-dot" style="width: 8px; height: 8px; background: #16a34a; border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite;"></span>
-            <label for="usb-port-selector" style="font-size: 0.85rem; font-weight: 700; color: #334155; font-family: 'Inter', sans-serif;">Porta Serial:</label>
-            <select id="usb-port-selector" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; color: #1e293b; font-size: 0.85rem; font-weight: 600; padding: 4px 8px; cursor: pointer; outline: none;">
-                <option value="COM3">COM3 (Windows)</option>
-                <option value="COM4">COM4 (Windows)</option>
-                <option value="/dev/ttyUSB0">/dev/ttyUSB0 (Linux)</option>
-                <option value="/dev/ttyACM0">/dev/ttyACM0 (Linux)</option>
-            </select>
-        </div>
+       <div style="display: inline-flex; align-items: center; gap: 0.75rem; background: #ffffff; padding: 0.5rem 1rem; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+    <span id="status-led" class="live-dot" style="width: 8px; height: 8px; background: #dc2626; border-radius: 50%; display: inline-block;"></span>
+    <button id="btn-conectar-usb" style="background: #16a34a; border: none; border-radius: 6px; color: #ffffff; font-size: 0.85rem; font-weight: 600; padding: 6px 12px; cursor: pointer; outline: none; transition: background 0.2s;">
+        Conectar Arduino via Navegador
+    </button>
+    <span id="nome-porta" style="font-size: 0.85rem; color: #64748b; font-weight: 500;">(Desconectado)</span>
+</div>
     </div>
 
     <div class="metrics" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
@@ -107,7 +104,9 @@
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    let ultimoIdInserido = null;
+   let ultimoIdInserido = null;
+    let portaSerialNavegador = null;
+    let leitorSerial = null;
 
     // ======================================================================
     // INICIALIZAÇÃO DOS GRÁFICOS (CHART.JS)
@@ -129,7 +128,7 @@
     const ctxNetwork = document.getElementById('networkChart').getContext('2d');
     const networkChart = new Chart(ctxNetwork, {
         type: 'line',
-        data: { labels: [], datasets: [{ label: 'Latência (ms)', data: [], borderColor: '#64748b', backgroundColor: 'rgba(100, 116, 139, 0.1)', tension: 0.1 }] },
+        data: { labels: [], datasets: [{ label: 'Latência Envio API (ms)', data: [], borderColor: '#64748b', backgroundColor: 'rgba(100, 116, 139, 0.1)', tension: 0.1 }] },
         options: { responsive: true, maintainAspectRatio: false }
     });
 
@@ -141,91 +140,142 @@
     });
 
     // ======================================================================
-    // ATUALIZAÇÃO DO DASHBOARD COM DADOS DA API
+    // PROCESSAR E EXIBIR DADOS DIRETOS DO ARDUINO
     // ======================================================================
-    function updateAdminDashboard(data, latency) {
-        // Atualiza os Cards Numéricos
-        document.getElementById('admin-umidade').textContent = data.umidade ?? '--';
-        document.getElementById('admin-temperatura').textContent = data.temperatura ?? '--';
-        document.getElementById('admin-status').textContent = '1';
+    function processarDadosArduinoLocais(linhaBruta) {
+        if (!linhaBruta || linhaBruta.includes("Iniciando")) return;
 
-        // Evita duplicar o mesmo ponto se o Arduino ainda não mandou nada novo
-        if (ultimoIdInserido === data.id) return;
-        ultimoIdInserido = data.id;
+        // Formato esperado do Arduino: umidade,temperatura,gas
+        const dados = linhaBruta.split(',');
+        if (dados.length < 3) return;
 
-        const horaAtual = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const umidade = parseFloat(dados[0]);
+        const temperatura = parseFloat(dados[1]);
+        const gas = parseFloat(dados[2]);
+        const ph = 7.0; // Padrão se não houver sensor físico
+        const peso = 0.0;
 
-        // Adiciona dados ao Gráfico de Umidade
+        // 1. Atualiza os Cards Numéricos na Tela do Admin Instantaneamente
+        document.getElementById('admin-umidade').textContent = umidade.toFixed(0);
+        document.getElementById('admin-temperatura').textContent = temperatura.toFixed(1);
+
+        const horaAtual = new Date().toLocaleTimeString('pt-BR', { hour12: false });
+
+        // 2. Empurra os dados para os Gráficos
         humidityChart.data.labels.push(horaAtual);
-        humidityChart.data.datasets[0].data.push(data.umidade);
+        humidityChart.data.datasets[0].data.push(umidade);
 
-        // Adiciona dados ao Gráfico de Temperatura
         temperatureChart.data.labels.push(horaAtual);
-        temperatureChart.data.datasets[0].data.push(data.temperatura);
+        temperatureChart.data.datasets[0].data.push(temperatura);
 
-        // Adiciona dados ao Gráfico de Latência
-        networkChart.data.labels.push(horaAtual);
-        networkChart.data.datasets[0].data.push(latency);
+        profitChart.data.datasets[0].data = [ph, gas, peso];
 
-        // Atualiza o Gráfico de Barras Múltiplo (pH, Gás, Peso)
-        profitChart.data.datasets[0].data = [data.ph ?? 7.0, data.gas ?? 0, data.peso ?? 0];
-
-        // Limita o histórico visual dos gráficos de linha em até 12 pontos para não travar a tela
+        // Limita o histórico visual em 12 pontos
         if (humidityChart.data.labels.length > 12) {
             humidityChart.data.labels.shift();
             humidityChart.data.datasets[0].data.shift();
             temperatureChart.data.labels.shift();
             temperatureChart.data.datasets[0].data.shift();
-            networkChart.data.labels.shift();
-            networkChart.data.datasets[0].data.shift();
         }
 
-        // Renderiza as mudanças na tela
         humidityChart.update();
         temperatureChart.update();
-        networkChart.update();
         profitChart.update();
-    }
 
-    // ======================================================================
-    // CONTROLE DE MUDANÇA DE PORTA USB
-    // ======================================================================
-    document.getElementById('usb-port-selector').addEventListener('change', function() {
-        // Limpa o histórico visual para receber a nova filtragem limpa
-        humidityChart.data.labels = []; humidityChart.data.datasets[0].data = [];
-        temperatureChart.data.labels = []; temperatureChart.data.datasets[0].data = [];
-        networkChart.data.labels = []; networkChart.data.datasets[0].data = [];
-        profitChart.data.datasets[0].data = [0, 0, 0];
+        // 3. Envia em segundo plano para o banco do Render para salvar o histórico
+        const tempoInicioEnvio = performance.now();
         
-        humidityChart.update(); temperatureChart.update(); networkChart.update(); profitChart.update();
-        
-        ultimoIdInserido = null; // Libera trava de ID
-        refreshAdminData();
-    });
-
-    function refreshAdminData() {
-        const portSelector = document.getElementById('usb-port-selector');
-        const selectedPort = portSelector ? portSelector.value : 'COM3';
-        const startTime = performance.now();
-
-        fetch(`/api/arduino/latest?port=${encodeURIComponent(selectedPort)}`)
-            .then(r => r.json())
-            .then(result => { 
-                const endTime = performance.now();
-                const executionTime = Math.round(endTime - startTime);
-                
-                if (result && result.data) {
-                    updateAdminDashboard(result.data, executionTime); 
-                } else {
-                    document.getElementById('admin-umidade').textContent = '--';
-                    document.getElementById('admin-temperatura').textContent = '--';
-                    document.getElementById('admin-status').textContent = '0';
-                }
+        fetch('/api/leituras', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                dispositivo_id: 'arduino_01',
+                porta_serial: 'Navegador_WebSerial',
+                temperatura: temperatura,
+                umidade: umidade,
+                gas: gas,
+                ph: ph,
+                peso: peso,
+                origem_cliente: 'painel_principal'
             })
-            .catch(() => {});
+        })
+        .then(() => {
+            const tempoFimEnvio = performance.now();
+            const latencia = Math.round(tempoFimEnvio - tempoInicioEnvio);
+            
+            // Atualiza o gráfico de latência com a resposta do Render
+            networkChart.data.labels.push(horaAtual);
+            networkChart.data.datasets[0].data.push(latencia);
+            if (networkChart.data.labels.length > 12) {
+                networkChart.data.labels.shift();
+                networkChart.data.datasets[0].data.shift();
+            }
+            networkChart.update();
+        })
+        .catch(() => {});
     }
 
-    refreshAdminData();
-    setInterval(refreshAdminData, 1000);
+    // ======================================================================
+    // CONEXÃO COM A WEB SERIAL API (FORNECIDA PELO NAVEGADOR)
+    // ======================================================================
+    async function conectarArduinoPeloNavegador() {
+        if (!("serial" in navigator)) {
+            alert("Seu navegador não suporta conexão USB direta. Use o Google Chrome ou Microsoft Edge.");
+            return;
+        }
+
+        try {
+            // Solicita ao navegador para mostrar a lista de portas disponíveis
+            portaSerialNavegador = await navigator.serial.requestPort();
+            
+            // Abre a conexão com a velocidade padrão do seu Arduino (9600)
+            await portaSerialNavegador.open({ baudRate: 9600 });
+            
+            // Atualiza o Layout para indicar sucesso
+            document.getElementById('status-led').style.background = '#16a34a'; // Verde
+            document.getElementById('status-led').style.animation = 'pulse 1.5s infinite';
+            document.getElementById('nome-porta').textContent = '(Conectado via USB)';
+            document.getElementById('admin-status').textContent = '1';
+            document.getElementById('btn-conectar-usb').style.display = 'none';
+
+            // Loop de leitura contínua da porta USB
+            while (portaSerialNavegador.readable) {
+                const textDecoder = new TextDecoderStream();
+                const readableStreamClosed = portaSerialNavegador.readable.pipeTo(textDecoder.writable);
+                const reader = textDecoder.readable.getReader();
+                leitorSerial = reader;
+
+                let buffer = '';
+                try {
+                    while (true) {
+                        const { value, done } = await reader.read();
+                        if (done) break;
+                        
+                        buffer += value;
+                        // O Arduino envia um quebra de linha (\n) ao fim de cada transmissão
+                        if (buffer.includes('\n')) {
+                            const linhas = buffer.split('\n');
+                            // Processa a linha completa anterior
+                            const linhaCompleta = linhas[0].trim();
+                            processarDadosArduinoLocais(linhaCompleta);
+                            // Guarda o resto no buffer
+                            buffer = linhas.slice(1).join('\n');
+                        }
+                    }
+                } catch (error) {
+                    console.error("Erro na leitura dos dados: ", error);
+                } finally {
+                    reader.releaseLock();
+                }
+            }
+
+        } catch (err) {
+            console.error("O usuário cancelou ou a porta falhou:", err);
+            alert("Não foi possível conectar ao dispositivo USB.");
+        }
+    }
+
+    // Vincula a ação de clicar ao botão criado
+    document.getElementById('btn-conectar-usb').addEventListener('click', conectarArduinoPeloNavegador);
 </script>
 @endsection
