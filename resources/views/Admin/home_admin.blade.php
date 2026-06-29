@@ -9,13 +9,13 @@
             <p style="color: #64748b; font-size: 0.95rem;">Monitoramento direto e qualificação de resíduos na entrada do processo.</p>
         </div>
         
-       <div style="display: inline-flex; align-items: center; gap: 0.75rem; background: #ffffff; padding: 0.5rem 1rem; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-    <span id="status-led" class="live-dot" style="width: 8px; height: 8px; background: #dc2626; border-radius: 50%; display: inline-block;"></span>
-    <button id="btn-conectar-usb" style="background: #16a34a; border: none; border-radius: 6px; color: #ffffff; font-size: 0.85rem; font-weight: 600; padding: 6px 12px; cursor: pointer; outline: none; transition: background 0.2s;">
-        Conectar Arduino via Navegador
-    </button>
-    <span id="nome-porta" style="font-size: 0.85rem; color: #64748b; font-weight: 500;">(Desconectado)</span>
-</div>
+        <div style="display: inline-flex; align-items: center; gap: 0.75rem; background: #ffffff; padding: 0.5rem 1rem; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <span id="status-led" class="live-dot" style="width: 8px; height: 8px; background: #dc2626; border-radius: 50%; display: inline-block;"></span>
+            <button id="btn-conectar-usb" style="background: #16a34a; border: none; border-radius: 6px; color: #ffffff; font-size: 0.85rem; font-weight: 600; padding: 6px 12px; cursor: pointer; outline: none; transition: background 0.2s;">
+                Conectar Arduino via Navegador
+            </button>
+            <span id="nome-porta" style="font-size: 0.85rem; color: #64748b; font-weight: 500;">(Desconectado)</span>
+        </div>
     </div>
 
     <div class="metrics" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
@@ -57,6 +57,27 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div id="container-triagem" style="background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 1rem; transition: all 0.3s ease;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <div id="badge-status-triagem" style="background: #cbd5e1; color: #1e293b; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; padding: 6px 16px; border-radius: 50px; letter-spacing: 0.05em;">
+                    Aguardando Leitura
+                </div>
+                <h3 style="font-size: 1.15rem; font-weight: 700; color: #1e293b; margin: 0; font-family: 'Inter', sans-serif;">Análise Diagnóstica da Carga</h3>
+            </div>
+            <span id="timestamp-triagem" style="font-size: 0.85rem; color: #64748b; font-weight: 500;">--:--:--</span>
+        </div>
+        <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 0;">
+        <div>
+            <h4 style="font-size: 0.9rem; font-weight: 700; color: #475569; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.025em;">Instruções Operacionais:</h4>
+            <p id="texto-instrucao-triagem" style="font-size: 1rem; color: #64748b; line-height: 1.6; margin: 0; font-weight: 500;">
+                Conecte o dispositivo Arduino na porta correspondente para iniciar o escaneamento físico, químico e visual da bombona recebida.
+            </p>
+        </div>
+        <div id="alertas-detalhes-parametros" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.75rem; margin-top: 0.5rem;">
+            </div>
     </div>
 
     <div style="display: flex; flex-direction: column; gap: 1.5rem; width: 100%;">
@@ -104,9 +125,17 @@
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-   let ultimoIdInserido = null;
+    let ultimoIdInserido = null;
     let portaSerialNavegador = null;
     let leitorSerial = null;
+
+    // Configurações analíticas e limites operacionais estritos baseados na parametrização técnica
+    const LIMITES_QUALIFICACAO = {
+        umidade: { aprovadoMin: 40, aprovadoMax: 60, toleravelMin: 10, toleravelMax: 65 },
+        temperatura: { aprovadoMax: 65, inspecionarMax: 70 },
+        ph: { aprovadoMin: 4.5, aprovadoMax: 8.5, inspecionarMin: 4.0, inspecionarMax: 9.0 },
+        gas: { aprovadoMax: 300, inspecionarMax: 600 }
+    };
 
     // ======================================================================
     // INICIALIZAÇÃO DOS GRÁFICOS (CHART.JS)
@@ -140,28 +169,134 @@
     });
 
     // ======================================================================
-    // PROCESSAR E EXIBIR DADOS DIRETOS DO ARDUINO
+    // PROCESSAR E EXIBIR DADOS DIRETOS DO ARDUINO + INTEGRAÇÃO COM REGRAS DE NEGÓCIO
     // ======================================================================
     function processarDadosArduinoLocais(linhaBruta) {
         if (!linhaBruta || linhaBruta.includes("Iniciando")) return;
 
-        // Formato esperado do Arduino: umidade,temperatura,gas
+        // Formato esperado do Arduino: umidade,temperatura,gas,ph,peso,plasticoDetectado
         const dados = linhaBruta.split(',');
         if (dados.length < 3) return;
 
         const umidade = parseFloat(dados[0]);
         const temperatura = parseFloat(dados[1]);
         const gas = parseFloat(dados[2]);
-        const ph = 7.0; // Padrão se não houver sensor físico
-        const peso = 0.0;
+        const ph = dados[3] ? parseFloat(dados[3]) : 7.0;
+        const peso = dados[4] ? parseFloat(dados[4]) : 0.0;
+        const plasticoDetectado = dados[5] ? parseInt(dados[5].trim()) === 1 : false;
 
-        // 1. Atualiza os Cards Numéricos na Tela do Admin Instantaneamente
+        // 1. Atualiza os Cards Numéricos Instantaneamente
         document.getElementById('admin-umidade').textContent = umidade.toFixed(0);
         document.getElementById('admin-temperatura').textContent = temperatura.toFixed(1);
 
         const horaAtual = new Date().toLocaleTimeString('pt-BR', { hour12: false });
+        document.getElementById('timestamp-triagem').textContent = `Última varredura: ${horaAtual}`;
 
-        // 2. Empurra os dados para os Gráficos
+        // ------------------------------------------------------------------
+        // ENGENHARIA DA REGRA DE NEGÓCIO: AVALIAÇÃO CONJUNTA DOS SENSORES
+        // ------------------------------------------------------------------
+        let nivelGravidade = 'APROVADO'; 
+        let motivosAlertas = [];
+
+        // Critério Eliminatório Primário: Presença Física de Plásticos/Polímeros
+        if (plasticoDetectado) {
+            nivelGravidade = 'REJEITADO';
+            motivosAlertas.push("❌ <strong>Contaminação Física:</strong> Plástico detectado na bombona.");
+        }
+
+        // Critério Físico-Químico: Umidade
+        if (umidade < LIMITES_QUALIFICACAO.umidade.toleravelMin || umidade > LIMITES_QUALIFICACAO.umidade.toleravelMax) {
+            nivelGravidade = 'REJEITADO';
+            motivosAlertas.push(`❌ <strong>Umidade Crítica:</strong> Fora da faixa tolerável (${umidade.toFixed(0)}%).`);
+        } else if (umidade < LIMITES_QUALIFICACAO.umidade.aprovadoMin || umidade > LIMITES_QUALIFICACAO.umidade.aprovadoMax) {
+            if (nivelGravidade !== 'REJEITADO') nivelGravidade = 'INSPECIONAR';
+            motivosAlertas.push(`⚠️ <strong>Umidade Limite:</strong> Fora do ideal de 40-60% (${umidade.toFixed(0)}%).`);
+        }
+
+        // Critério Térmico: Temperatura
+        if (temperatura > LIMITES_QUALIFICACAO.temperatura.inspecionarMax) {
+            nivelGravidade = 'REJEITADO';
+            motivosAlertas.push(`❌ <strong>Temperatura Crítica:</strong> Superou o teto microbiano (${temperatura.toFixed(1)}°C).`);
+        } else if (temperatura > LIMITES_QUALIFICACAO.temperatura.aprovadoMax) {
+            if (nivelGravidade !== 'REJEITADO') nivelGravidade = 'INSPECIONAR';
+            motivosAlertas.push(`⚠️ <strong>Temperatura Elevada:</strong> Em faixa de transição térmica (${temperatura.toFixed(1)}°C).`);
+        }
+
+        // Critério Biológico: pH
+        if (ph < LIMITES_QUALIFICACAO.ph.inspecionarMin || ph > LIMITES_QUALIFICACAO.ph.inspecionarMax) {
+            nivelGravidade = 'REJEITADO';
+            motivosAlertas.push(`❌ <strong>pH Inadequado:</strong> Fora dos limites viáveis de compostagem (${ph.toFixed(1)}).`);
+        } else if (ph < LIMITES_QUALIFICACAO.ph.aprovadoMin || ph > LIMITES_QUALIFICACAO.ph.aprovadoMax) {
+            if (nivelGravidade !== 'REJEITADO') nivelGravidade = 'INSPECIONAR';
+            motivosAlertas.push(`⚠️ <strong>pH em Desvio:</strong> Carga levemente ácida ou alcalina (${ph.toFixed(1)}).`);
+        }
+
+        // Critério de Decomposição: Concentração de Gases (Putrefação Anaeróbica)
+        if (gas > LIMITES_QUALIFICACAO.gas.inspecionarMax) {
+            nivelGravidade = 'REJEITADO';
+            motivosAlertas.push(`❌ <strong>Gases Críticos:</strong> Alta emanação de compostos voláteis (${gas.toFixed(0)} PPM).`);
+        } else if (gas > LIMITES_QUALIFICACAO.gas.aprovadoMax) {
+            if (nivelGravidade !== 'REJEITADO') nivelGravidade = 'INSPECIONAR';
+            motivosAlertas.push(`⚠️ <strong>Gases Suspeitos:</strong> Liberação gasosa moderada detectada (${gas.toFixed(0)} PPM).`);
+        }
+
+        // ------------------------------------------------------------------
+        // ATUALIZAÇÃO DO CONTAINER DE VEREDITO E INSTRUÇÃO DE AÇÃO
+        // ------------------------------------------------------------------
+        const containerTriagem = document.getElementById('container-triagem');
+        const badgeTriagem = document.getElementById('badge-status-triagem');
+        const textoInstrucao = document.getElementById('texto-instrucao-triagem');
+        const painelDetalhes = document.getElementById('alertas-detalhes-parametros');
+
+        painelDetalhes.innerHTML = ''; 
+
+        if (nivelGravidade === 'REJEITADO') {
+            containerTriagem.style.borderColor = '#ef4444';
+            containerTriagem.style.background = '#fef2f2';
+            badgeTriagem.style.background = '#ef4444';
+            badgeTriagem.style.color = '#ffffff';
+            badgeTriagem.textContent = 'REJEITADO / CONTAMINADO';
+            
+            textoInstrucao.innerHTML = '<span style="color: #b91c1c; font-weight: 700;">AÇÃO EXIGIDA:</span> Realize o **DESVIO IMEDIATO** deste material orgânico do fluxo de esteira padrão. A carga contém contaminantes ou desvios químicos críticos que inviabilizam a sua mistura com a massa principal, sob risco de inviabilizar o lote microbiológico.';
+        } else if (nivelGravidade === 'INSPECIONAR') {
+            containerTriagem.style.borderColor = '#f59e0b';
+            containerTriagem.style.background = '#fffbeb';
+            badgeTriagem.style.background = '#f59e0b';
+            badgeTriagem.style.color = '#ffffff';
+            badgeTriagem.textContent = 'INSPECIONAR CARGA';
+
+            textoInstrucao.innerHTML = '<span style="color: #b45309; font-weight: 700;">AÇÃO SUGERIDA:</span> Conduza uma **AVALIAÇÃO VISUAL E SELETIVA** manual na bombona antes da deposição final. Verifique o histórico de descarte deste cliente específico e avalie a presença de impurezas pontuais.';
+        } else {
+            containerTriagem.style.borderColor = '#10b981';
+            containerTriagem.style.background = '#f0fdf4';
+            badgeTriagem.style.background = '#10b981';
+            badgeTriagem.style.color = '#ffffff';
+            badgeTriagem.textContent = 'APROVADO';
+
+            textoInstrucao.innerHTML = 'Carga em conformidade estrutural e microbiológica ideal. **LIBERAÇÃO AUTORIZADA** para processamento e encaminhamento direto ao pátio de compostagem ativa da Massalas.';
+        }
+
+        // Geração dos pequenos cards informativos para cada violação encontrada
+        motivosAlertas.forEach(motivo => {
+            const minicard = document.createElement('div');
+            minicard.style.background = 'rgba(255,255,255,0.85)';
+            minicard.style.border = '1px solid rgba(0,0,0,0.06)';
+            minicard.style.padding = '0.5rem 0.75rem';
+            minicard.style.borderRadius = '8px';
+            minicard.style.fontSize = '0.85rem';
+            minicard.style.color = '#334155';
+            minicard.innerHTML = motivo;
+            painelDetalhes.appendChild(minicard);
+        });
+
+        // Caso a leitura esteja completamente limpa e aprovada
+        if (motivosAlertas.length === 0) {
+            painelDetalhes.innerHTML = '<div style="color: #047857; font-size: 0.85rem; font-weight: 600;">✓ Todas as variáveis físico-químicas operam dentro da faixa verde.</div>';
+        }
+
+        // ------------------------------------------------------------------
+        // ATUALIZAÇÃO SINCRO DA INTERFACE GRÁFICA (CHART.JS)
+        // ------------------------------------------------------------------
         humidityChart.data.labels.push(horaAtual);
         humidityChart.data.datasets[0].data.push(umidade);
 
@@ -170,7 +305,6 @@
 
         profitChart.data.datasets[0].data = [ph, gas, peso];
 
-        // Limita o histórico visual em 12 pontos
         if (humidityChart.data.labels.length > 12) {
             humidityChart.data.labels.shift();
             humidityChart.data.datasets[0].data.shift();
@@ -182,7 +316,7 @@
         temperatureChart.update();
         profitChart.update();
 
-        // 3. Envia em segundo plano para o banco do Render para salvar o histórico
+        // Envio estruturado em segundo plano ao back-end em nuvem no Render
         const tempoInicioEnvio = performance.now();
         
         fetch('/api/leituras', {
@@ -196,6 +330,7 @@
                 gas: gas,
                 ph: ph,
                 peso: peso,
+                status_contaminacao: nivelGravidade.toLowerCase(),
                 origem_cliente: 'painel_principal'
             })
         })
@@ -203,7 +338,6 @@
             const tempoFimEnvio = performance.now();
             const latencia = Math.round(tempoFimEnvio - tempoInicioEnvio);
             
-            // Atualiza o gráfico de latência com a resposta do Render
             networkChart.data.labels.push(horaAtual);
             networkChart.data.datasets[0].data.push(latencia);
             if (networkChart.data.labels.length > 12) {
@@ -225,20 +359,15 @@
         }
 
         try {
-            // Solicita ao navegador para mostrar a lista de portas disponíveis
             portaSerialNavegador = await navigator.serial.requestPort();
-            
-            // Abre a conexão com a velocidade padrão do seu Arduino (9600)
             await portaSerialNavegador.open({ baudRate: 9600 });
             
-            // Atualiza o Layout para indicar sucesso
-            document.getElementById('status-led').style.background = '#16a34a'; // Verde
+            document.getElementById('status-led').style.background = '#16a34a'; 
             document.getElementById('status-led').style.animation = 'pulse 1.5s infinite';
             document.getElementById('nome-porta').textContent = '(Conectado via USB)';
             document.getElementById('admin-status').textContent = '1';
             document.getElementById('btn-conectar-usb').style.display = 'none';
 
-            // Loop de leitura contínua da porta USB
             while (portaSerialNavegador.readable) {
                 const textDecoder = new TextDecoderStream();
                 const readableStreamClosed = portaSerialNavegador.readable.pipeTo(textDecoder.writable);
@@ -252,30 +381,26 @@
                         if (done) break;
                         
                         buffer += value;
-                        // O Arduino envia um quebra de linha (\n) ao fim de cada transmissão
                         if (buffer.includes('\n')) {
                             const linhas = buffer.split('\n');
-                            // Processa a linha completa anterior
                             const linhaCompleta = linhas[0].trim();
                             processarDadosArduinoLocais(linhaCompleta);
-                            // Guarda o resto no buffer
                             buffer = linhas.slice(1).join('\n');
                         }
                     }
                 } catch (error) {
-                    console.error("Erro na leitura dos dados: ", error);
+                    console.error("Erro na leitura serial interna: ", error);
                 } finally {
                     reader.releaseLock();
                 }
             }
 
         } catch (err) {
-            console.error("O usuário cancelou ou a porta falhou:", err);
-            alert("Não foi possível conectar ao dispositivo USB.");
+            console.error("Conexão cancelada pelo operador ou falha de hardware:", err);
+            alert("Não foi possível estabelecer conexão estável com o dispositivo USB.");
         }
     }
 
-    // Vincula a ação de clicar ao botão criado
     document.getElementById('btn-conectar-usb').addEventListener('click', conectarArduinoPeloNavegador);
 </script>
 @endsection
