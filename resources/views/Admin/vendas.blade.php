@@ -59,19 +59,19 @@
         <article class="metric-card" style="background: #ffffff; border-radius: 16px; padding: 1.5rem; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
             <div class="metric-label" style="color: #475569; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Faturamento Total</div>
             <div class="metric-value" style="font-size: 2.2rem; font-weight: 800; color: #0f172a; margin: 0.5rem 0;">R$ {{ number_format($faturamentoTotal ?? 0, 2, ',', '.') }}</div>
-            <p style="color: #64748b; font-size: 0.85rem;">Soma de todos os pedidos concluídos.</p>
+            <p style="color: #64748b; font-size: 0.85rem;">Soma de todos os pedidos <strong>concluídos</strong>.</p>
         </article>
 
         <article class="metric-card profit-card" style="background: #ffffff; border-radius: 16px; padding: 1.5rem; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
             <div class="metric-label" style="color: #16a34a; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Clientes Cadastrados</div>
             <div class="metric-value" style="font-size: 2.2rem; font-weight: 800; color: #16a34a; margin: 0.5rem 0;">{{ $clientes ?? 0 }}</div>
-            <p style="color: #64748b; font-size: 0.85rem;">Perfis de consumidores ativos no sistema.</p>
+            <p style="color: #64748b; font-size: 0.85rem;">Perfis de consumidores <strong>ativos</strong> no sistema.</p>
         </article>
 
         <article class="metric-card" style="background: #ffffff; border-radius: 16px; padding: 1.5rem; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
             <div class="metric-label" style="color: #475569; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Leituras Realizadas</div>
             <div class="metric-value" style="font-size: 2.2rem; font-weight: 800; color: #0f172a; margin: 0.5rem 0;">{{ $leituras ?? 0 }}</div>
-            <p style="color: #64748b; font-size: 0.85rem;">Registros de telemetria armazenados.</p>
+            <p style="color: #64748b; font-size: 0.85rem;">Registros de <strong>telemetria</strong> armazenados.</p>
         </article>
     </div>
 
@@ -136,32 +136,28 @@
     const faturamentoMensal = {!! json_encode($faturamentoMensal ?? [0, 0, 0, 0, 0, 0]) !!}; 
     const mesesLabels = {!! json_encode($mesesLabels ?? ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun']) !!};
 
+    // ALTERAÇÃO: Removido os limites fixos explícitos (0, 80, 100) e os marcadores de Mínimo/Máximo.
+    // O gráfico agora exibe a leitura direta em barras limpas e comparativas.
     const salesChart = new Chart(document.getElementById('salesChart').getContext('2d'), {
-        type: 'line',
+        type: 'bar',
         data: {
-            labels: ['Mínimo', 'Atual', 'Máximo (Ref)'],
+            labels: ['Umidade (%)', 'Temperatura (°C)'],
             datasets: [
                 { 
-                    label: 'Umidade (%)', 
-                    data: [0, Number(latest?.umidade ?? 0), 100], 
-                    borderColor: '#0284c7', 
-                    backgroundColor: 'rgba(2, 132, 199, 0.05)', 
-                    fill: true, 
-                    tension: 0.35
-                },
-                { 
-                    label: 'Temperatura (°C)', 
-                    data: [0, Number(latest?.temperatura ?? 0), 80], 
-                    borderColor: '#ea580c', 
-                    backgroundColor: 'rgba(234, 82, 12, 0.05)', 
-                    fill: true, 
-                    tension: 0.35
+                    label: 'Leitura Atual', 
+                    data: [Number(latest?.umidade ?? 0), Number(latest?.temperatura ?? 0)], 
+                    backgroundColor: ['#0284c7', '#ea580c'],
+                    borderRadius: 6,
+                    barThickness: 35
                 }
             ]
         },
         options: { 
             responsive: true,
             maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
             scales: {
                 y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.03)' } },
                 x: { grid: { display: false } }

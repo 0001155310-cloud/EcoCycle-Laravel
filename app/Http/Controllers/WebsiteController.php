@@ -302,4 +302,12 @@ class WebsiteController extends Controller
             'updated_at' => $latest?->updated_at?->toDateTimeString(),
         ]);
     }
+
+    public function adminEstacaoDetalhes()
+    {
+        // Certifique-se de que a view foi criada em: resources/views/Admin/estacao_detalhes.blade.php
+        return view('Admin.estacao_detalhes');
+    }
+
+    
 }

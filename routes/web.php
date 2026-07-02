@@ -43,6 +43,20 @@ Route::get('/admin/vendas', [WebsiteController::class, 'adminVendas'])->name('ad
 Route::get('/admin/historicos', [WebsiteController::class, 'adminHistoricos'])->name('admin.historicos');
 Route::get('/admin/rotas', [WebsiteController::class, 'adminRotas'])->name('admin.rotas');
 
+// NOVA ROTA: Informações específicas e detalhadas da Estação
+Route::get('/admin/estacao/detalhes', [WebsiteController::class, 'adminEstacaoDetalhes'])->name('admin.estacao.detalhes');
+
 // Endpoints de Integração com o Arduino (API do Sistema)
 Route::get('/api/arduino/latest', [LeituraController::class, 'latest'])->name('arduino.latest');
 Route::get('/api/arduino/live', [LeituraController::class, 'live'])->name('arduino.live');
+
+// Certifique-se de colocar junto com as outras rotas do painel admin
+Route::prefix('admin')->name('admin.')->group(function () {
+    
+    // Sua rota atual que renderiza a página
+    Route::get('/estacao/detalhes', [WebsiteController::class, 'adminEstacaoDetalhes'])->name('estacao.detalhes');
+    
+    // ADICIONE ESTA LINHA AQUI:
+    Route::put('/estacao/update-limites/{id}', [WebsiteController::class, 'updateLimites'])->name('estacao.update-limites');
+
+});

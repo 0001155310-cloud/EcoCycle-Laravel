@@ -7,6 +7,33 @@
     <link rel="stylesheet" href="/assets_admin/css/app.css">
     <link rel="stylesheet" href="/assets/css/charts.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Garantia de visibilidade e animação básica da Sidebar Mobile */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -280px;
+                top: 0;
+                bottom: 0;
+                width: 280px;
+                z-index: 1000;
+                transition: transform 0.3s ease;
+            }
+            .sidebar.active {
+                transform: translateX(280px);
+            }
+            .overlay {
+                display: none;
+                position: fixed;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0,0,0,0.4);
+                z-index: 999;
+            }
+            .overlay.active {
+                display: block;
+            }
+        }
+    </style>
     @yield('styles')
 </head>
 <body class="shell">
@@ -34,7 +61,7 @@
             <div class="avatar admin">AD</div>
             <div>
                 <div class="profile-name">{{ $displayName }}</div>
-                <div class="profile-role">{{ $user->email ?? 'Administrador EcoCycle' }}</div>
+                <div class="profile-role">{{ $user?->email ?? 'Administrador EcoCycle' }}</div>
             </div>
         </div>
         <nav class="sidebar-nav">
@@ -63,7 +90,21 @@
         </section>
     </main>
 
-    <script src=""></script>
+    <script>
+        // Lógica de acionamento do menu mobile (Hambúrguer)
+        document.getElementById('menuToggle').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.add('active');
+            document.getElementById('sidebarOverlay').classList.add('active');
+        });
+
+        function fecharMenuMobile() {
+            document.getElementById('sidebar').classList.remove('active');
+            document.getElementById('sidebarOverlay').classList.remove('active');
+        }
+
+        document.getElementById('closeMenu').addEventListener('click', fecharMenuMobile);
+        document.getElementById('sidebarOverlay').addEventListener('click', fecharMenuMobile);
+    </script>
     @yield('scripts')
 </body>
-</html>  
+</html>
