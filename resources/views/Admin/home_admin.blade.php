@@ -113,7 +113,7 @@
 
         <div class="charts-adicionais" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; width: 100%;">
             <div class="ccard" style="min-height: 340px; display: flex; flex-direction: column; background: #ffffff; padding: 1.5rem; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
-                <div class="ccard-title" style="font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-bottom: 1rem;">Concentração Estimada de Lixiviado</div>
+                <div class="ccard-title" style="font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-bottom: 1rem;">Concentração Estimada de Materiais</div>
                 <div style="flex: 1; position: relative; width: 100%; display: flex; justify-content: center; align-items: center;">
                     <canvas id="lixiviadoChart"></canvas>
                 </div>
