@@ -1,231 +1,262 @@
 @extends('Admin.layout_admin')
-@section('title', 'Informações Detalhadas da Estação - EcoCycle')
+@section('title', 'Monitoramento Avançado ESG & Business Intelligence')
 
 @section('content')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<section style="padding: 1.5rem; background-color: #f8fafc; min-height: 100vh; font-family: system-ui, -apple-system, sans-serif;">
+<section style="padding: 2rem; background-color: #f8fafc; min-height: 100vh; font-family: system-ui, -apple-system, sans-serif;">
     
-    @if(session('success'))
-        <div style="padding: 1rem; background-color: #dcfce7; border: 1px solid #bbf7d0; color: #15803d; border-radius: 12px; margin-bottom: 1.5rem; font-weight: 600; font-size: 0.95rem;">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+    <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 1.5rem 2rem; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03); border: 1px solid #e2e8f0;">
         <div>
-            <h2 style="color: #1e293b; font-weight: 700; margin-bottom: 0.25rem;">Especificações Técnicas e Relatórios</h2>
-            <p style="color: #64748b; font-size: 0.95rem;">Análise de infraestrutura, calibragem e logs operacionais da estação.</p>
+            <h2 style="color: #0f172a; font-weight: 800; margin: 0; font-size: 1.75rem; letter-spacing: -0.02em;">Centro de Comando de Sustentabilidade & Viabilidade Financeira</h2>
+            <p style="color: #64748b; font-size: 0.95rem; margin: 0.35rem 0 0 0;">Dados integrados com auditoria ESG, economia circular e balanço econômico operacional.</p>
         </div>
-        <a href="{{ route('admin.home') }}" style="display: inline-flex; align-items: center; gap: 0.5rem; background: #ffffff; border: 1px solid #e2e8f0; color: #475569; font-weight: 600; font-size: 0.85rem; padding: 8px 16px; border-radius: 8px; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: background 0.2s;">
-            Voltar ao Painel
-        </a>
-    </div>
-
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-        <div style="background: #ffffff; padding: 1.25rem; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-            <span style="color: #64748b; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">Média de Peças / Min</span>
-            <h4 style="font-size: 1.75rem; font-weight: 800; color: #1e293b; margin: 0.25rem 0 0 0;">{{ $estacao->pecas_por_minuto ?? '42' }} <span style="font-size: 0.9rem; color: #94a3b8; font-weight: 500;">und</span></h4>
-        </div>
-        <div style="background: #ffffff; padding: 1.25rem; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-            <span style="color: #64748b; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">Eficiência Geral OEE</span>
-            <h4 style="font-size: 1.75rem; font-weight: 800; color: #10b981; margin: 0.25rem 0 0 0;">{{ $estacao->eficiencia ?? '94.2' }}%</h4>
-        </div>
-        <div style="background: #ffffff; padding: 1.25rem; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-            <span style="color: #64748b; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">Consumo Atual do Motor</span>
-            <h4 style="font-size: 1.75rem; font-weight: 800; color: #3b82f6; margin: 0.25rem 0 0 0;">{{ $estacao->consumo_watts ?? '280' }} <span style="font-size: 0.9rem; color: #94a3b8; font-weight: 500;">Watts</span></h4>
+        <div style="display: flex; gap: 1.25rem; align-items: center;">
+            <div id="badge-conexao" style="display: flex; align-items: center; gap: 0.6rem; background: #fef2f2; padding: 10px 16px; border-radius: 10px; border: 1px solid #fee2e2; transition: all 0.3s ease;">
+                <div id="luz-conexao" style="width: 10px; height: 10px; background: #ef4444; border-radius: 50%; animation: pulse 2s infinite;"></div>
+                <span style="font-size: 0.8rem; font-weight: 800; color: #991b1b; letter-spacing: 0.05em;" id="status-conexao">CONECTANDO...</span>
+            </div>
+            <a href="{{ route('admin.home') }}" style="background: #0f172a; color: #ffffff; font-weight: 600; font-size: 0.9rem; padding: 11px 20px; border-radius: 10px; text-decoration: none; box-shadow: 0 4px 6px -1px rgba(15,23,42,0.15); transition: background 0.2s;">Painel Principal</a>
         </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;" id="main-layout">
+    <div style="margin-bottom: 1rem; font-weight: 700; color: #475569; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.075em; border-left: 4px solid #10b981; padding-left: 0.5rem;">Indicadores Ambientais e de Economia Circular (Metas ESG)</div>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem; margin-bottom: 2.5rem;">
         
-        <div style="display: flex; flex-direction: column; gap: 2rem;">
-            
-            <div style="background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
-                    <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <div style="background: #e0f2fe; padding: 8px; border-radius: 8px; color: #0284c7;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                        </div>
-                        <h3 style="font-size: 1.25rem; font-weight: 700; color: #1e293b; margin: 0;">Histórico Operacional das Últimas Horas</h3>
-                    </div>
-                    <span style="font-size: 0.75rem; background: #f1f5f9; color: #475569; padding: 4px 8px; border-radius: 6px; font-weight: 600;">Atualiza a cada 5s</span>
-                </div>
-                <div style="width: 100%; height: 300px; position: relative;">
-                    <canvas id="telemetriaChart"></canvas>
-                </div>
+        <div style="background: #ffffff; padding: 1.5rem; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+            <span style="color: #64748b; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Aproveitamento de Orgânicos</span>
+            <h4 style="font-size: 2rem; font-weight: 800; color: #0f172a; margin: 0.35rem 0;" id="val-aproveitamento">0%</h4>
+            <div style="width: 100%; background: #f1f5f9; height: 8px; border-radius: 9999px; margin-top: 0.75rem; overflow: hidden; border: 1px solid #e2e8f0;">
+                <div id="barra-aproveitamento" style="width: 0%; background: linear-gradient(90deg, #10b981, #059669); height: 100%; transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);"></div>
             </div>
-
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
-                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem; display: flex; align-items: center; gap: 0.75rem;">
-                    <div style="background: #f0fdf4; color: #16a34a; padding: 8px; border-radius: 8px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                    </div>
-                    <div>
-                        <span style="display: block; font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase;">Tempo Ativo (Uptime)</span>
-                        <strong style="font-size: 1.1rem; color: #1e293b;">{{ $estacao->uptime ?? '14d 6h 32m' }}</strong>
-                    </div>
-                </div>
-
-                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem; display: flex; align-items: center; gap: 0.75rem;">
-                    <div style="background: #eff6ff; color: #2563eb; padding: 8px; border-radius: 8px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>
-                    </div>
-                    <div>
-                        <span style="display: block; font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase;">Sinal RSSI (Hardware)</span>
-                        <strong style="font-size: 1.1rem; color: #2563eb;">{{ $estacao->sinal_rssi ?? '-62 dBm' }} <span style="font-size: 0.75rem; color: #16a34a;">(Excelente)</span></strong>
-                    </div>
-                </div>
-
-                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem; display: flex; align-items: center; gap: 0.75rem;">
-                    <div style="background: #faf5ff; color: #7c3aed; padding: 8px; border-radius: 8px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22" x2="12" y2="12"></line></svg>
-                    </div>
-                    <div>
-                        <span style="display: block; font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase;">Volume Total Reciclado</span>
-                        <strong style="font-size: 1.1rem; color: #1e293b;">{{ $estacao->volume_total ?? '1.240' }} <span style="font-size: 0.8rem; color: #64748b; font-weight: 500;">kg</span></strong>
-                    </div>
-                </div>
-            </div>
-
-            <form action="{{ route('admin.estacao.update-limites', $estacao->id ?? 1) }}" method="POST">
-                @csrf
-                @method('PUT')
-                
-                <div style="background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
-                        <div style="background: #fef3c7; padding: 8px; border-radius: 8px; color: #d97706;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
-                        </div>
-                        <h3 style="font-size: 1.25rem; font-weight: 700; color: #1e293b; margin: 0;">Seção 2: Parametrização e Limites de Calibragem</h3>
-                    </div>
-                    
-                    <div style="overflow-x: auto;">
-                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
-                            <thead>
-                                <tr style="border-bottom: 2px solid #e2e8f0; color: #475569;">
-                                    <th style="padding: 0.75rem 0;">Grandeza</th>
-                                    <th style="padding: 0.75rem 0;">Atual</th>
-                                    <th style="padding: 0.75rem 0; width: 140px;">Limite Máximo</th>
-                                    <th style="padding: 0.75rem 0; text-align: right;">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody style="color: #334155;">
-                                <tr>
-                                    <td style="padding: 0.75rem 0; font-weight: 600;">Umidade</td>
-                                    <td style="padding: 0.75rem 0;"><span style="background: #e6f4ea; color: #137333; padding: 2px 8px; border-radius: 4px;">{{ $estacao->umidade_atual ?? '65' }}%</span></td>
-                                    <td style="padding: 0.75rem 0;"><input type="number" name="limite_umidade" value="{{ $estacao->limite_umidade ?? '85' }}" style="width: 60px; padding: 4px; border: 1px solid #cbd5e1; border-radius: 6px; text-align: center;"> %</td>
-                                    <td style="padding: 0.75rem 0; text-align: right; color: #16a34a; font-weight: 700;">✓ Estável</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 0.75rem 0; font-weight: 600;">Temperatura</td>
-                                    <td style="padding: 0.75rem 0;"><span style="background: #fef7e0; color: #b06000; padding: 2px 8px; border-radius: 4px;">{{ $estacao->temperatura_atual ?? '42' }}°C</span></td>
-                                    <td style="padding: 0.75rem 0;"><input type="number" name="limite_temperatura" value="{{ $estacao->limite_temperatura ?? '70' }}" style="width: 60px; padding: 4px; border: 1px solid #cbd5e1; border-radius: 6px; text-align: center;"> °C</td>
-                                    <td style="padding: 0.75rem 0; text-align: right; color: #16a34a; font-weight: 700;">✓ Estável</td>
-                                </tr>
-                                @php
-                                    $isCritico = ($estacao->gases_atual ?? 520) > ($estacao->limite_gases ?? 450);
-                                @endphp
-                                <tr style="background-color: {{ $isCritico ? '#fff7ed' : 'transparent' }};">
-                                    <td style="padding: 0.75rem 0; font-weight: 600;">Gases Voláteis</td>
-                                    <td style="padding: 0.75rem 0;"><span style="background: #fce8e6; color: #c5221f; padding: 2px 8px; border-radius: 4px;">{{ $estacao->gases_atual ?? 520 }} PPM</span></td>
-                                    <td style="padding: 0.75rem 0;"><input type="number" name="limite_gases" value="{{ $estacao->limite_gases ?? 450 }}" style="width: 60px; padding: 4px; border: 1px solid #ea580c; border-radius: 6px; text-align: center;"> PPM</td>
-                                    <td style="padding: 0.75rem 0; text-align: right; color: #ea580c; font-weight: 700;">{{ $isCritico ? '⚠️ Alerta Enviado' : '✓ Estável' }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div style="margin-top: 1rem; display: flex; justify-content: flex-end;">
-                        <button type="submit" style="background: #1e293b; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer;">Salvar Limites</button>
-                    </div>
-                </div>
-            </form>
+            <p style="font-size: 0.75rem; color: #64748b; margin: 0.75rem 0 0 0;">Resíduos desviados de aterros industriais.</p>
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 2rem;">
+        <div style="background: #ffffff; padding: 1.5rem; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+            <span style="color: #64748b; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Gases de Efeito Estufa (GEE)</span>
+            <h4 style="font-size: 2rem; font-weight: 800; color: #0f172a; margin: 0.35rem 0;" id="val-co2">0 kg</h4>
+            <p style="font-size: 0.75rem; color: #10b981; margin: 0.75rem 0 0 0; font-weight: 600;">Carbono total mitigado (CO₂e).</p>
+        </div>
+
+        <div style="background: #ffffff; padding: 1.5rem; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+            <span style="color: #64748b; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Pureza do Composto Final</span>
+            <h4 style="font-size: 2rem; font-weight: 800; color: #0f172a; margin: 0.35rem 0;" id="val-pureza">0%</h4>
+            <p style="font-size: 0.75rem; color: #64748b; margin: 0.75rem 0 0 0;">Isenção de plásticos, metais e inertes.</p>
+        </div>
+
+        <div style="background: #ffffff; padding: 1.5rem; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+            <span style="color: #64748b; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Conformidade Regulatória</span>
+            <h4 style="font-size: 1.4rem; font-weight: 800; color: #0f172a; margin: 0.65rem 0;" id="val-auditoria">Verificando...</h4>
+            <p style="font-size: 0.75rem; color: #64748b; margin: 0 0 0 0;">Padrão em linha com auditorias ambientais.</p>
+        </div>
+    </div>
+
+    <div style="margin-bottom: 1rem; font-weight: 700; color: #475569; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.075em; border-left: 4px solid #3b82f6; padding-left: 0.5rem;">Desempenho Econômico e Otimização Operacional</div>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.75rem; margin-bottom: 2.5rem;">
+        
+        <div style="background: #ffffff; border-radius: 16px; padding: 1.75rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); border: 1px solid #e2e8f0;">
+            <h4 style="font-size: 1.1rem; font-weight: 700; color: #0f172a; margin: 0 0 1.25rem 0;">Retorno do Investimento e Custos Evitados</h4>
             
-            <div style="background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-                <span style="font-size: 0.75rem; color: #64748b; font-weight: 700; text-transform: uppercase; display: block; margin-bottom: 1rem; text-align: center;">Distribuição de Impurezas</span>
-                <div style="display: flex; justify-content: center; margin-bottom: 1rem;">
-                    <div style="position: relative; width: 130px; height: 130px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: conic-gradient(#ef4444 0% 3%, #f59e0b 3% 11%, #e2e8f0 11% 100%);">
-                        <div style="position: absolute; width: 105px; height: 105px; background: #ffffff; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                            <span style="font-size: 1.75rem; font-weight: 900; color: #ef4444; line-height: 1;">{{ $estacao->contaminacao_atual ?? '3' }}%</span>
-                            <span style="font-size: 0.6rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Metais</span>
-                        </div>
-                    </div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                <div style="padding: 1rem; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+                    <span style="display: block; font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.02em;">Triagem Mecânica</span>
+                    <strong style="font-size: 1.25rem; color: #0f172a; display: block; margin-top: 0.35rem;" id="val-triagem">R$ 0,00</strong>
+                    <span style="font-size: 0.65rem; color: #64748b; display: block; margin-top: 0.25rem;">Otimização de mão de obra</span>
                 </div>
-                <div style="font-size: 0.75rem; display: flex; flex-direction: column; gap: 4px;">
-                    <div style="display: flex; align-items: center; gap: 6px;"><span style="width: 8px; height: 8px; background: #ef4444; border-radius: 50%;"></span> Metais Críticos (3%)</div>
-                    <div style="display: flex; align-items: center; gap: 6px;"><span style="width: 8px; height: 8px; background: #f59e0b; border-radius: 50%;"></span> Obstruções Leves (8%)</div>
+                <div style="padding: 1rem; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+                    <span style="display: block; font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.02em;">Logística Reversa</span>
+                    <strong style="font-size: 1.25rem; color: #0f172a; display: block; margin-top: 0.35rem;" id="val-descarte">R$ 0,00</strong>
+                    <span style="font-size: 0.65rem; color: #64748b; display: block; margin-top: 0.25rem;">Custos de descarte mitigados</span>
                 </div>
-            </div>
-
-            <div style="background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-                <h4 style="font-size: 1rem; font-weight: 700; margin: 0 0 1rem 0; color: #1e293b;">Manutenção Preventiva</h4>
-                <div style="margin-bottom: 1rem;">
-                    <span style="display: block; font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 4px;">EMISSOR IR</span>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <div style="flex: 1; height: 6px; background: #e2e8f0; border-radius: 3px;"><div style="width: 92%; height: 100%; background: #3b82f6; border-radius: 3px;"></div></div>
-                        <span style="font-size: 0.75rem; font-weight: 700;">92%</span>
-                    </div>
-                </div>
-                <div>
-                    <span style="display: block; font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 4px;">LIMPEZA DA CALHA</span>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <div style="flex: 1; height: 6px; background: #e2e8f0; border-radius: 3px;"><div style="width: 15%; height: 100%; background: #ef4444; border-radius: 3px;"></div></div>
-                        <span style="font-size: 0.75rem; font-weight: 700;">15h</span>
-                    </div>
+                <div style="padding: 1rem; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+                    <span style="display: block; font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.02em;">Valor Ativo Composto</span>
+                    <strong style="font-size: 1.25rem; color: #10b981; display: block; margin-top: 0.35rem;" id="val-receita">R$ 0,00</strong>
+                    <span style="font-size: 0.65rem; color: #64748b; display: block; margin-top: 0.25rem;">Patrimônio de subprodutos</span>
                 </div>
             </div>
+            
+            <div style="width: 100%; height: 260px; position: relative;">
+                <canvas id="graficoFinanceiro"></canvas>
+            </div>
+        </div>
 
+        <div style="background: #ffffff; border-radius: 16px; padding: 1.75rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); border: 1px solid #e2e8f0;">
+            <h4 style="font-size: 1.1rem; font-weight: 700; color: #0f172a; margin: 0 0 1.25rem 0;">Fluxo Metrológico de Resíduos (Massa)</h4>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem; font-size: 0.85rem; background: #f8fafc; padding: 12px 16px; border-radius: 10px; border: 1px solid #e2e8f0;">
+                <span style="color: #475569; font-weight: 600;">Rastreabilidade da Cadeia de Fornecimento:</span>
+                <strong style="color: #0f172a;" id="val-fornecedor">Buscando fornecedor logístico...</strong>
+            </div>
+            <div style="width: 100%; height: 290px; position: relative;">
+                <canvas id="graficoVolumetrico"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-bottom: 1rem; font-weight: 700; color: #475569; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.075em; border-left: 4px solid #0f172a; padding-left: 0.5rem;">Diagnóstico Físico do Processamento Técnico</div>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem;">
+        <div style="background: #0f172a; color: #ffffff; padding: 1.5rem; border-radius: 14px; border: 1px solid #1e293b;">
+            <span style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Vazão Operacional</span>
+            <div style="font-size: 1.6rem; font-weight: 800; margin-top: 0.5rem; color: #f8fafc;" id="val-velocidade">0 un/min</div>
+        </div>
+        <div style="background: #0f172a; color: #ffffff; padding: 1.5rem; border-radius: 14px; border: 1px solid #1e293b;">
+            <span style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Temperatura Biológica</span>
+            <div style="font-size: 1.6rem; font-weight: 800; margin-top: 0.5rem; color: #f8fafc;" id="val-temperatura">0 °C</div>
+        </div>
+        <div style="background: #0f172a; color: #ffffff; padding: 1.5rem; border-radius: 14px; border: 1px solid #1e293b;">
+            <span style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Umidade Relativa</span>
+            <div style="font-size: 1.6rem; font-weight: 800; margin-top: 0.5rem; color: #f8fafc;" id="val-umidade">0%</div>
+        </div>
+        <div style="background: #0f172a; color: #ffffff; padding: 1.5rem; border-radius: 14px; border: 1px solid #1e293b;">
+            <span style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Contaminação Interceptada</span>
+            <div style="font-size: 1.6rem; font-weight: 800; color: #f87171; margin-top: 0.5rem;" id="val-contaminantes">0 kg</div>
         </div>
     </div>
 </section>
 
+<style>
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: .4; }
+    }
+</style>
+
 <script>
-    const ctx = document.getElementById('telemetriaChart').getContext('2d');
-    const telemetriaChart = new Chart(ctx, {
+    // Configurações Gráfico Financeiro
+    const ctxFin = document.getElementById('graficoFinanceiro').getContext('2d');
+    let chartFin = new Chart(ctxFin, {
         type: 'line',
         data: {
-            labels: ['10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00'],
+            labels: [],
             datasets: [
-                {
-                    label: 'Temperatura (°C)',
-                    data: [38, 39, 41, 40, 42, 41, @json($estacao->temperatura_atual ?? 42)],
-                    borderColor: '#f59e0b',
-                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                    borderWidth: 2,
+                { 
+                    label: 'Custos Evitados (R$)', 
+                    data: [], 
+                    borderColor: '#3b82f6', 
+                    backgroundColor: 'rgba(59,130,246,0.06)', 
+                    fill: true, 
                     tension: 0.3,
-                    fill: true
+                    borderWidth: 2.5,
+                    pointBackgroundColor: '#3b82f6'
                 },
-                {
-                    label: 'Gases (PPM / 10)',
-                    data: [45, 48, 50, 49, 53, 51, @json(($estacao->gases_atual ?? 520) / 10)],
-                    borderColor: '#ef4444',
-                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                    borderWidth: 2,
+                { 
+                    label: 'Valorização do Composto (R$)', 
+                    data: [], 
+                    borderColor: '#10b981', 
+                    backgroundColor: 'transparent', 
                     tension: 0.3,
-                    fill: true
+                    borderWidth: 2.5,
+                    pointBackgroundColor: '#10b981'
                 }
             ]
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'top', labels: { font: { family: 'system-ui', weight: '600' } } }
-            },
-            scales: {
-                y: { beginAtZero: false, grid: { color: '#f1f5f9' } },
-                x: { grid: { display: false } }
-            }
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            plugins: { legend: { labels: { boxWidth: 12, font: { family: 'system-ui', size: 11 } } } },
+            scales: { 
+                y: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 11 } } }, 
+                x: { grid: { display: false }, ticks: { font: { size: 11 } } } 
+            } 
         }
     });
-</script>
 
-<style>
-    @media (max-width: 1024px) {
-        div[id="main-layout"] { grid-template-columns: 1fr !important; }
+    // Configurações Gráfico Volumétrico (Massa de Destinação)
+    const ctxVol = document.getElementById('graficoVolumetrico').getContext('2d');
+    let chartVol = new Chart(ctxVol, {
+        type: 'bar',
+        data: {
+            labels: ['Massa Recebida', 'Massa Biotransformada', 'Inertes Retidos'],
+            datasets: [{
+                label: 'Massa Acumulada (Kg)',
+                data: [0, 0, 0],
+                backgroundColor: ['#64748b', '#10b981', '#ef4444'],
+                borderRadius: 8,
+                barThickness: 45
+            }]
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            plugins: { legend: { display: false } },
+            scales: { 
+                y: { grid: { color: '#f1f5f9' }, beginAtZero: true, ticks: { font: { size: 11 } } },
+                x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+            } 
+        }
+    });
+
+    const formatBRL = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
+
+    async function atualizarDadosPlanta() {
+        try {
+            const res = await fetch("{{ route('admin.api.estacao.latest') }}");
+            if (!res.ok) throw new Error("Erro de infraestrutura HTTP");
+            const payload = await res.json();
+
+            if (payload.ok && payload.data) {
+                const d = payload.data;
+
+                // Visual de Sucesso Conexão Estável
+                const badge = document.getElementById('badge-conexao');
+                badge.style.background = "#f0fdf4"; 
+                badge.style.borderColor = "#bbf7d0";
+                document.getElementById('luz-conexao').style.background = "#10b981";
+                const status = document.getElementById('status-conexao');
+                status.innerText = "SISTEMA ONLINE"; 
+                status.style.color = "#166534";
+
+                // Atualizações de Telemetria Ambiental
+                document.getElementById('val-aproveitamento').innerText = d.percentual_aproveitamento + '%';
+                document.getElementById('barra-aproveitamento').style.width = d.percentual_aproveitamento + '%';
+                document.getElementById('val-co2').innerText = d.co2_evitado_kg.toLocaleString() + ' kg';
+                document.getElementById('val-pureza').innerText = d.pureza_composto_percentual + '%';
+                document.getElementById('val-auditoria').innerText = d.conformidade_auditoria ? '100% CONFORME' : 'NÃO CONFORME';
+
+                // Atualizações Econômicas
+                document.getElementById('val-triagem').innerText = formatBRL(d.custo_triagem_economizado);
+                document.getElementById('val-descarte').innerText = formatBRL(d.custo_descarte_evitado);
+                document.getElementById('val-receita').innerText = formatBRL(d.valor_gerado_composto);
+                document.getElementById('val-fornecedor').innerText = d.fornecedor_origem;
+
+                // Atualizações Técnicas do Dispositivo
+                document.getElementById('val-velocidade').innerText = d.pecas_por_minuto + ' un/min';
+                document.getElementById('val-temperatura').innerText = d.temperatura + ' °C';
+                document.getElementById('val-umidade').innerText = d.umidade + '%';
+                document.getElementById('val-contaminantes').innerText = d.contaminantes_rejeitados_kg + ' kg';
+
+                // Alimentação Temporal do Gráfico de Tendências
+                const horaAtual = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                if (chartFin.data.labels.length > 7) {
+                    chartFin.data.labels.shift();
+                    chartFin.data.datasets[0].data.shift();
+                    chartFin.data.datasets[1].data.shift();
+                }
+                chartFin.data.labels.push(horaAtual);
+                chartFin.data.datasets[0].data.push(d.custo_triagem_economizado + d.custo_descarte_evitado);
+                chartFin.data.datasets[1].data.push(d.valor_gerado_composto);
+                chartFin.update();
+
+                // Atualização do Gráfico de Carga Volumétrica
+                chartVol.data.datasets[0].data = [d.volume_recebido_kg, d.volume_aproveitado_kg, d.contaminantes_rejeitados_kg];
+                chartVol.update();
+            }
+        } catch (e) {
+            console.error("Falha no barramento de sincronização:", e);
+            // Visual de Queda / Interrupção de Sinal
+            const badge = document.getElementById('badge-conexao');
+            badge.style.background = "#fef2f2"; 
+            badge.style.borderColor = "#fee2e2";
+            document.getElementById('luz-conexao').style.background = "#ef4444";
+            const status = document.getElementById('status-conexao');
+            status.innerText = "FALHA DE CONEXÃO"; 
+            status.style.color = "#991b1b";
+        }
     }
-</style>
+
+    setInterval(atualizarDadosPlanta, 5000);
+    window.onload = atualizarDadosPlanta;
+</script>
 @endsection

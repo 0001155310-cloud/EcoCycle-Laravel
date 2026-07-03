@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WebsiteController;
-use App\Http\AdminController;
+use App\Http\Controllers\AdminController; // Corrigido o namespace que estava faltando o "Controllers"
 use App\Http\Controllers\Api\LeituraController; 
 
 /*
@@ -34,29 +34,28 @@ Route::get('/cliente/historico', [WebsiteController::class, 'historicoCliente'])
 Route::get('/cliente/faq', [WebsiteController::class, 'faqCliente'])->name('cliente.faq');
 Route::get('/cliente/dispositivos', [WebsiteController::class, 'dispositivosCliente'])->name('cliente.dispositivos');
 
-// Painel do Admin (Gerenciamento e Controle Geral)
-Route::get('/admin', [WebsiteController::class, 'homeAdmin'])->name('admin.home');
-Route::get('/admin/clientes', [WebsiteController::class, 'adminClientes'])->name('admin.clientes');
-Route::post('/admin/clientes/salvar', [AdminController::class, 'salvarCliente'])->name('admin.clientes.salvar');
-Route::post('/admin/clientes/{id}/excluir', [AdminController::class, 'excluirCliente'])->name('admin.clientes.excluir');
-Route::get('/admin/vendas', [WebsiteController::class, 'adminVendas'])->name('admin.vendas');
-Route::get('/admin/historicos', [WebsiteController::class, 'adminHistoricos'])->name('admin.historicos');
-Route::get('/admin/rotas', [WebsiteController::class, 'adminRotas'])->name('admin.rotas');
-
-// NOVA ROTA: Informações específicas e detalhadas da Estação
-Route::get('/admin/estacao/detalhes', [WebsiteController::class, 'adminEstacaoDetalhes'])->name('admin.estacao.detalhes');
-
-// Endpoints de Integração com o Arduino (API do Sistema)
+// Endpoints de Integração com o Arduino (API Externa do Sistema)
 Route::get('/api/arduino/latest', [LeituraController::class, 'latest'])->name('arduino.latest');
 Route::get('/api/arduino/live', [LeituraController::class, 'live'])->name('arduino.live');
 
-// Certifique-se de colocar junto com as outras rotas do painel admin
+
+// PAINEL DO ADMIN (Grupo organizado com prefixos automáticos)
 Route::prefix('admin')->name('admin.')->group(function () {
     
-    // Sua rota atual que renderiza a página
+    // URLs geradas automaticamente: /admin, /admin/clientes, etc.
+    Route::get('/', [WebsiteController::class, 'homeAdmin'])->name('home');
+    Route::get('/clientes', [WebsiteController::class, 'adminClientes'])->name('clientes');
+    Route::post('/clientes/salvar', [AdminController::class, 'salvarCliente'])->name('clientes.salvar');
+    Route::post('/clientes/{id}/excluir', [AdminController::class, 'excluirCliente'])->name('clientes.excluir');
+    Route::get('/vendas', [WebsiteController::class, 'adminVendas'])->name('vendas');
+    Route::get('/historicos', [WebsiteController::class, 'adminHistoricos'])->name('historicos');
+    Route::get('/rotas', [WebsiteController::class, 'adminRotas'])->name('rotas');
+
+    // Tela de Informações específicas e detalhadas da Estação (URL: /admin/estacao/detalhes | Nome: admin.estacao.detalhes)
     Route::get('/estacao/detalhes', [WebsiteController::class, 'adminEstacaoDetalhes'])->name('estacao.detalhes');
-    
-    // ADICIONE ESTA LINHA AQUI:
     Route::put('/estacao/update-limites/{id}', [WebsiteController::class, 'updateLimites'])->name('estacao.update-limites');
+
+    // API interna de atualização do Dashboard (URL: /admin/api/estacao/latest | Nome: admin.api.estacao.latest)
+    Route::get('/api/estacao/latest', [WebsiteController::class, 'arduinoLatest'])->name('api.estacao.latest');
 
 });
