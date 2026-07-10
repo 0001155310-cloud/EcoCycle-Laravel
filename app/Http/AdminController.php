@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http;
+namespace App\Https;
 
 use App\Http\Controllers\Controller;
 use App\Models\Clientes;
