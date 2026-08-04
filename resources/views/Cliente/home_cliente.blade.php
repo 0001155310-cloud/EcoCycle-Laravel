@@ -88,7 +88,13 @@
             <h2>Painel do Cliente</h2>
             <p>Acompanhe a saúde da sua compostagem e o desempenho dos sensores em tempo real.</p>
         </div>
-        <span class="live-pill"><span class="live-dot"></span>Atualização automática</span>
+        <div style="display: inline-flex; align-items: center; gap: 0.75rem; background: #ffffff; padding: 0.5rem 1rem; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <span id="status-led" style="width: 8px; height: 8px; background: #dc2626; border-radius: 50%; display: inline-block;"></span>
+            <button id="btn-conectar-usb" style="background: #16a34a; border: none; border-radius: 6px; color: #ffffff; font-size: 0.85rem; font-weight: 600; padding: 6px 12px; cursor: pointer; outline: none; transition: background 0.2s;">
+                Conectar Dispositivo
+            </button>
+            <span id="nome-porta" style="font-size: 0.85rem; color: #64748b; font-weight: 500;">(Desconectado)</span>
+        </div>
     </div>
 
     <div class="metrics-grid">
@@ -157,6 +163,8 @@
     const MAX_PONTOS_GRAFICO = 20; 
     let ultimoIdInserido = null;
     let ultimaPortaAtiva = null; // Guarda o estado da porta ativa para detectar mudanças
+    let portaSerialNavegador = null;
+    let leitorSerial = null;
 
     Chart.defaults.set('plugins.legend', {
         labels: { font: { family: "'Inter', sans-serif", size: 12 } }
@@ -176,14 +184,14 @@
                 pointRadius: 3
             }]
         },
-        options: { 
+        options: {
             responsive: true,
             maintainAspectRatio: false,
             resizeDelay: 100,
-            scales: { 
+            scales: {
                 y: { beginAtZero: true, min: 0, max: 100, grid: { color: 'rgba(0,0,0,0.03)' } },
                 x: { grid: { display: false } }
-            } 
+            }
         }
     });
 
@@ -201,14 +209,14 @@
                 pointRadius: 3
             }]
         },
-        options: { 
+        options: {
             responsive: true,
             maintainAspectRatio: false,
             resizeDelay: 100,
-            scales: { 
+            scales: {
                 y: { beginAtZero: true, min: 0, max: 80, grid: { color: 'rgba(0,0,0,0.03)' } },
                 x: { grid: { display: false } }
-            } 
+            }
         }
     });
 
@@ -243,14 +251,13 @@
         document.getElementById('info-ph').textContent = ph.toFixed(1);
         document.getElementById('info-gas').textContent = `${gas.toFixed(0)} ppm`;
         document.getElementById('info-peso').textContent = `${peso.toFixed(1)} kg`;
-        
+
         document.getElementById('bar-ph').style.width = `${Math.min(100, Math.max(8, ph * 10))}%`;
         document.getElementById('bar-gas').style.width = `${Math.min(100, gas / 2.5)}%`;
         document.getElementById('bar-peso').style.width = `${Math.min(100, peso * 5)}%`;
 
         if (data.id !== ultimoIdInserido) {
             ultimoIdInserido = data.id;
-
             const agora = new Date();
             const horaFormatada = agora.toLocaleTimeString('pt-BR', { hour12: false });
 
@@ -263,13 +270,160 @@
             if (liveHumidityChart.data.labels.length > MAX_PONTOS_GRAFICO) {
                 liveHumidityChart.data.labels.shift();
                 liveHumidityChart.data.datasets[0].data.shift();
-                
+
                 liveTemperatureChart.data.labels.shift();
                 liveTemperatureChart.data.datasets[0].data.shift();
             }
 
             liveHumidityChart.update();
             liveTemperatureChart.update();
+        }
+    }
+
+    function atualizarInterfaceComArduino({ umidade, temperatura, peso, ph, gas, statusContaminacao, horaAtual }) {
+        deviceWarning.style.display = 'none';
+
+        document.getElementById('val-umidade').textContent = `${umidade.toFixed(0)}%`;
+        document.getElementById('val-temperatura').textContent = `${temperatura.toFixed(1)}°C`;
+        document.getElementById('val-peso').textContent = `${peso.toFixed(1)} kg`;
+        document.getElementById('status-text').textContent = statusContaminacao;
+
+        document.getElementById('info-ph').textContent = ph.toFixed(1);
+        document.getElementById('info-gas').textContent = `${gas.toFixed(0)} ppm`;
+        document.getElementById('info-peso').textContent = `${peso.toFixed(1)} kg`;
+
+        document.getElementById('bar-ph').style.width = `${Math.min(100, Math.max(8, ph * 10))}%`;
+        document.getElementById('bar-gas').style.width = `${Math.min(100, gas / 2.5)}%`;
+        document.getElementById('bar-peso').style.width = `${Math.min(100, peso * 5)}%`;
+
+        liveHumidityChart.data.labels.push(horaAtual);
+        liveHumidityChart.data.datasets[0].data.push(umidade);
+
+        liveTemperatureChart.data.labels.push(horaAtual);
+        liveTemperatureChart.data.datasets[0].data.push(temperatura);
+
+        if (liveHumidityChart.data.labels.length > MAX_PONTOS_GRAFICO) {
+            liveHumidityChart.data.labels.shift();
+            liveHumidityChart.data.datasets[0].data.shift();
+            liveTemperatureChart.data.labels.shift();
+            liveTemperatureChart.data.datasets[0].data.shift();
+        }
+
+        liveHumidityChart.update();
+        liveTemperatureChart.update();
+    }
+
+    function processarDadosArduinoLocais(linhaBruta) {
+        if (!linhaBruta || linhaBruta.includes('Iniciando')) return;
+
+        const dados = linhaBruta.split(',');
+        if (dados.length < 3) return;
+
+        const umidade = parseFloat(dados[0]);
+        const temperatura = parseFloat(dados[1]);
+        const gas = parseFloat(dados[2]);
+        const ph = dados[3] ? parseFloat(dados[3]) : 7.0;
+        const peso = dados[4] ? parseFloat(dados[4]) : 0.0;
+        const plasticoDetectado = dados[5] ? parseInt(dados[5].trim()) === 1 : false;
+
+        let statusContaminacao = 'Aprovado';
+        if (plasticoDetectado) {
+            statusContaminacao = 'Rejeitado';
+        } else if (umidade < 30 || umidade > 85 || temperatura > 70 || gas > 600 || ph < 4 || ph > 9) {
+            statusContaminacao = 'Inspecionar';
+        }
+
+        atualizarInterfaceComArduino({
+            umidade,
+            temperatura,
+            peso,
+            ph,
+            gas,
+            statusContaminacao,
+            horaAtual: new Date().toLocaleTimeString('pt-BR', { hour12: false })
+        });
+    }
+
+    function redefinirInterfaceDesconectado() {
+        document.getElementById('status-led').style.background = '#dc2626';
+        document.getElementById('status-led').style.animation = 'none';
+        document.getElementById('nome-porta').textContent = '(Desconectado)';
+        document.getElementById('btn-conectar-usb').style.background = '#16a34a';
+        document.getElementById('btn-conectar-usb').textContent = 'Conectar Dispositivo';
+        document.getElementById('btn-conectar-usb').disabled = false;
+        portaSerialNavegador = null;
+        leitorSerial = null;
+    }
+
+    async function gerenciarFluxoLeitura(porta) {
+        try {
+            await porta.open({ baudRate: 9600 });
+            portaSerialNavegador = porta;
+
+            document.getElementById('status-led').style.background = '#16a34a';
+            document.getElementById('status-led').style.animation = 'pulse 1.5s infinite';
+            document.getElementById('nome-porta').textContent = '(Conectado via USB)';
+            const botao = document.getElementById('btn-conectar-usb');
+            botao.textContent = 'Dispositivo Conectado';
+            botao.style.background = '#64748b';
+            botao.disabled = true;
+
+            while (porta.readable) {
+                const textDecoder = new TextDecoderStream();
+                const readableStreamClosed = porta.readable.pipeTo(textDecoder.writable);
+                const reader = textDecoder.readable.getReader();
+                leitorSerial = reader;
+
+                let buffer = '';
+                try {
+                    while (true) {
+                        const { value, done } = await reader.read();
+                        if (done) break;
+
+                        buffer += value;
+                        if (buffer.includes('\n')) {
+                            const linhas = buffer.split('\n');
+                            const linhaCompleta = linhas[0].trim();
+                            processarDadosArduinoLocais(linhaCompleta);
+                            buffer = linhas.slice(1).join('\n');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Erro na leitura serial contínua:', error);
+                } finally {
+                    reader.releaseLock();
+                }
+            }
+        } catch (err) {
+            console.error('Falha ao abrir ou ler porta USB:', err);
+            redefinirInterfaceDesconectado();
+        }
+    }
+
+    async function conectarArduinoPeloNavegador() {
+        if (!('serial' in navigator)) {
+            alert('Seu navegador não suporta conexão USB direta. Use o Google Chrome ou Microsoft Edge.');
+            return;
+        }
+
+        try {
+            const porta = await navigator.serial.requestPort();
+            await gerenciarFluxoLeitura(porta);
+        } catch (err) {
+            console.error('Solicitação manual rejeitada:', err);
+        }
+    }
+
+    async function checarEAutoConectar() {
+        if ('serial' in navigator && !portaSerialNavegador) {
+            try {
+                const portasAutorizadas = await navigator.serial.getPorts();
+                if (portasAutorizadas.length > 0) {
+                    await gerenciarFluxoLeitura(portasAutorizadas[0]);
+                }
+            } catch (e) {
+                console.error('Falha na varredura automática:', e);
+            }
         }
     }
 
@@ -285,6 +439,10 @@
     }
 
     function refreshData() {
+        if (portaSerialNavegador) {
+            return;
+        }
+
         // 1. Descobre de forma transparente qual porta o administrador ativou
         fetch('/api/arduino/config-porta')
             .then(res => res.json())
@@ -311,6 +469,16 @@
             .catch(() => {
                 updateDashboard(null);
             });
+    }
+
+    document.getElementById('btn-conectar-usb').addEventListener('click', conectarArduinoPeloNavegador);
+    window.addEventListener('DOMContentLoaded', checarEAutoConectar);
+    window.addEventListener('focus', checarEAutoConectar);
+
+    if ('serial' in navigator) {
+        navigator.serial.addEventListener('disconnect', () => {
+            redefinirInterfaceDesconectado();
+        });
     }
 
     // Inicialização segura
