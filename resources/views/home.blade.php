@@ -23,8 +23,9 @@
             background: transparent;
             border: none;
             cursor: pointer;
-            z-index: 1001;
+            z-index: 1001; /* Garante que o botão fique acima de tudo */
             padding: 0;
+            margin: 0; /* Remove margens que podem desalinhá-lo */
         }
 
         .menu-toggle span {
@@ -35,36 +36,60 @@
             transition: all 0.3s ease;
         }
 
-        /* Regras para Celulares e Tablets */
+        /* Regras para Celulares e Tablets (Até 768px) */
         @media (max-width: 768px) {
             
-            /* Ajuste da Topbar e Menu */
+            /* --- CORREÇÃO DE ALINHAMENTO DA TOPBAR --- */
             .topbar {
                 display: flex;
-                justify-content: space-between;
-                align-items: center;
+                justify-content: space-between; /* ESQUERDA (Logo) e DIREITA (Hambúrguer) */
+                align-items: center; /* Alinhamento vertical centralizado perfeito */
                 position: relative;
-                padding: 1rem 1.5rem;
+                padding: 1rem 1.5rem; /* Ajuste o padding conforme necessário */
+                z-index: 1000;
+                width: 100%; /* Garante que ocupe toda a largura */
+                box-sizing: border-box; /* Inclui padding na largura total */
+                /* Adicionei isso para garantir que não haja altura extra */
+                min-height: auto; 
+                margin-top: 0; 
+            }
+
+            /* Ajuste para o texto da marca (logo) */
+            .topbar .brand {
+                display: flex;
+                align-items: center;
+                margin: 0;
+                padding: 0;
+                /* Adicionei isso para garantir que o texto não tenha margem extra */
+                line-height: 1; 
             }
 
             .menu-toggle {
                 display: flex; /* Exibe o botão hamburguer no mobile */
+                margin-left: auto; /* Força o botão para a direita se houver espaço */
+                /* Adicionei isso para remover qualquer altura extra herdada */
+                height: 20px; 
+                align-self: center; /* Garante que o hambúrguer se centralize verticalmente */
             }
+            /* ------------------------------------------- */
 
             .nav-links {
                 display: none; /* Esconde o menu original */
                 position: absolute;
-                top: 100%;
+                top: 100%; /* Cola logo abaixo da topbar */
                 left: 0;
                 width: 100%;
-                background-color: rgba(15, 23, 42, 0.95); /* Fundo do menu mobile */
+                background-color: rgba(15, 23, 42, 0.98); /* Fundo do menu mobile mais opaco */
                 backdrop-filter: blur(10px);
                 flex-direction: column;
                 align-items: center;
                 padding: 1.5rem 0;
                 gap: 1.2rem;
-                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-                z-index: 1000;
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+                
+                /* --- A CORREÇÃO DE SOBREPOSIÇÃO ESTÁ AQUI --- */
+                z-index: 9999; /* Valor muito alto para garantir sobreposição */
+                /* ------------------------------------------- */
             }
 
             .nav-links.active {
@@ -82,12 +107,16 @@
                 transform: rotate(-45deg) translate(7px, -6px);
             }
 
-            /* Ajustes no Hero */
+            /* Ajustes no Hero para não quebrar */
             .hero-content {
                 display: flex;
                 flex-direction: column;
                 padding: 2rem 1.5rem;
                 gap: 2rem;
+                position: relative;
+                z-index: 1; /* Garante que o conteúdo do hero fique em uma camada baixa */
+                /* Adicionei isso para garantir que o hero não sobreponha a topbar */
+                margin-top: 0; 
             }
 
             .hero-copy h1 {
